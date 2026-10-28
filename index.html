@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="算算你還要幾年爬到財富階梯的下一階，以及現在哪根槓桿最有效。數字只存在你的裝置。">
+<meta name="theme-color" content="#2a78d6">
+<meta property="og:type" content="website">
+<meta property="og:title" content="財富階梯計算機">
+<meta property="og:description" content="算算你還要幾年爬到財富階梯的下一階，以及現在哪根槓桿最有效。數字只存在你的裝置。">
+<meta property="og:url" content="https://rcchieh.github.io/wealth-ladder/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪜</text></svg>">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>財富階梯計算機</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap">
+<style>
+:root{
+  --bg:#f3f4f1; --panel:#ffffff; --ink:#18201c; --ink-2:#4e5853; --ink-3:#7a837e;
+  --line:#dfe2dc; --line-2:#eceee9; --field:#f7f8f5;
+  --accent:#2a78d6; --accent-soft:#cde2fb; --accent-ink:#1c5cab;
+  --rung:#e7eae4; --rung-on:#18201c; --rung-on-ink:#ffffff;
+  --good:#0a7d0a; --warn-bg:#fff4dc; --warn-ink:#7a5200; --warn-line:#f0d28a;
+  --band:#2a78d6; --band-op:.14;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#141816; --panel:#1c211e; --ink:#eef1ec; --ink-2:#b4bcb6; --ink-3:#88918b;
+    --line:#2f3632; --line-2:#262c28; --field:#222824;
+    --accent:#3987e5; --accent-soft:#184f95; --accent-ink:#9ec5f4;
+    --rung:#262c28; --rung-on:#eef1ec; --rung-on-ink:#141816;
+    --good:#3fc03f; --warn-bg:#3a2e12; --warn-ink:#f3cf7a; --warn-line:#6b5420;
+    --band:#3987e5; --band-op:.22;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141816; --panel:#1c211e; --ink:#eef1ec; --ink-2:#b4bcb6; --ink-3:#88918b;
+  --line:#2f3632; --line-2:#262c28; --field:#222824;
+  --accent:#3987e5; --accent-soft:#184f95; --accent-ink:#9ec5f4;
+  --rung:#262c28; --rung-on:#eef1ec; --rung-on-ink:#141816;
+  --good:#3fc03f; --warn-bg:#3a2e12; --warn-ink:#f3cf7a; --warn-line:#6b5420;
+  --band:#3987e5; --band-op:.22;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;padding-inline:20px;padding-block:28px 96px}
+.wrap{max-width:1180px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;margin-bottom:22px}
+h1{font-family:var(--serif);font-weight:900;font-size:clamp(26px,3.4vw,36px);letter-spacing:.02em;margin:0;text-wrap:balance}
+.sub{color:var(--ink-2);margin:10px 0 0;max-width:72ch;line-height:1.75}
+.sub.q{color:var(--ink);font-size:clamp(16px,1.6vw,18px);font-weight:700;line-height:1.6;margin-top:12px}
+.sub.note{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.tag{font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:minmax(300px,360px) 1fr;gap:20px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.inputs{padding:6px 18px 18px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:880px){.inputs{position:static;max-height:none}}
+fieldset{border:0;border-top:1px solid var(--line-2);margin:0;padding:14px 0 6px}
+fieldset:first-of-type{border-top:0}
+legend{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--ink-3);padding:0;margin-bottom:8px}
+.row{display:grid;grid-template-columns:1fr 128px;gap:10px;align-items:center;margin-bottom:8px}
+.row label{font-size:13.5px;color:var(--ink-2);line-height:1.35}
+.row label small{display:block;color:var(--ink-3);font-size:11.5px}
+input[type=number],select{width:100%;font:500 14px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:6px 8px;text-align:right}
+select{text-align:left}
+.inp{position:relative;display:block}
+.inp input{padding-right:30px}
+.inp .u{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--ink-3);pointer-events:none}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.real{font-family:var(--mono);font-size:11px;color:var(--accent-ink)}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2);margin:6px 0}
+.check input{margin-top:4px;accent-color:var(--accent)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{font:500 13px var(--sans);border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--ink-3)}
+.results{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;min-width:0}
+.hero{display:grid;grid-template-columns:1fr 210px;gap:24px;padding:22px 24px}
+@media (max-width:620px){.hero{grid-template-columns:minmax(0,1fr)}}
+.grid>*,.hero>*{min-width:0}
+.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--ink-3);font-weight:700}
+.eta{font-family:var(--serif);font-weight:900;font-size:clamp(40px,6vw,64px);line-height:1.05;margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.eta .unit{font-size:.42em;font-weight:600;margin-left:6px}
+.eta-meta{font-family:var(--mono);font-size:13.5px;color:var(--ink-2)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2)}
+.fact{min-width:120px}
+.fact b{display:block;font:600 17px var(--mono);font-variant-numeric:tabular-nums}
+.fact span{font-size:12px;color:var(--ink-3)}
+.warn{margin-top:14px;background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:8px;padding:9px 12px;font-size:13.5px}
+.warn[hidden]{display:none}
+/* ladder */
+.ladder{display:flex;flex-direction:column;gap:5px;position:relative;padding-left:14px;border-left:3px solid var(--line);border-right:3px solid var(--line);padding-right:14px}
+.rung{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center;background:var(--rung);border-radius:4px;padding:5px 9px;font-size:12px;position:relative;overflow:hidden}
+.rung .lv{font:600 12px var(--mono)}
+.rung .fz{color:var(--ink-2)}
+.rung .rg{grid-column:1/-1;font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.rung.on{background:var(--rung-on);color:var(--rung-on-ink)}
+.rung.on .fz,.rung.on .rg{color:var(--rung-on-ink);opacity:.8}
+.rung.next{outline:2px dashed var(--accent);outline-offset:-2px}
+.rung .prog{position:absolute;left:0;bottom:0;height:3px;background:var(--accent)}
+.card{padding:20px 22px}
+.card h2{font-family:var(--serif);font-weight:600;font-size:20px;margin:0 0 4px;text-wrap:balance}
+.card .lede{color:var(--ink-2);font-size:13.5px;margin:0 0 14px;max-width:70ch}
+.chart-wrap{position:relative;overflow-x:auto}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--ink-3)}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px;font:12px var(--mono);color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.12);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tip b{font-weight:600}
+.keyline{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--ink-2);margin-top:8px}
+.sw{display:inline-block;width:18px;height:10px;vertical-align:-1px;margin-right:6px;border-radius:2px}
+details{margin-top:12px}
+summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
+.tbl{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line-2);text-align:right;white-space:nowrap}
+th{font-weight:500;color:var(--ink-3);font-size:12px}
+th:first-child,td:first-child{text-align:left}
+td{font-family:var(--mono)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:980px){.two{grid-template-columns:1fr}}
+.lever{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:4px 12px;align-items:center;margin-bottom:10px}
+.lever .nm{font-size:13.5px}
+.lever .nm small{color:var(--ink-3);font-size:12px;margin-left:4px}
+.lever .val{font:600 13px var(--mono);text-align:right}
+.lever .bar{grid-column:1/-1;height:8px;background:var(--line-2);border-radius:4px;overflow:hidden}
+.lever .bar i{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.lever.top .nm{font-weight:700}
+ol.todo{margin:0;padding-left:22px;display:grid;gap:9px}
+ol.todo li{padding-left:4px}
+ol.todo li b{font-weight:700}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.rule{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.rule b{display:block;font:600 16px var(--mono)}
+.rule span{font-size:12.5px;color:var(--ink-2)}
+.explain{font-size:13px;color:var(--ink-2)}
+.explain p{margin:6px 0;max-width:80ch}
+.tl{position:relative;margin:34px 0 52px;height:14px;border-radius:7px;background:var(--line-2);display:flex;overflow:visible}
+.tl .seg{height:100%}
+.tl .lived{background:var(--ink-3);opacity:.35;border-radius:7px 0 0 7px}
+.tl .healthy{background:var(--accent)}
+.tl .frail{background:repeating-linear-gradient(135deg,var(--ink-3) 0 2px,transparent 2px 6px);opacity:.6;border-radius:0 7px 7px 0}
+.tl .mk{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink)}
+.tl .mk span{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;font:600 11.5px var(--mono);color:var(--ink)}
+.tl .mk.up span{bottom:calc(100% + 3px)}
+.tl .mk.dn span{top:calc(100% + 3px)}
+.tl .mk.lvl{background:var(--accent)}
+.tl .mk.lvl span{color:var(--accent-ink)}
+.tl .end{position:absolute;right:0;top:calc(100% + 24px);font:11px var(--mono);color:var(--ink-3)}
+.tl .start{position:absolute;left:0;top:calc(100% + 24px);font:11px var(--mono);color:var(--ink-3)}
+.tri3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:620px){.tri3{grid-template-columns:1fr}}
+.corner{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.corner .k{font-size:12px;letter-spacing:.12em;color:var(--ink-3);font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.corner .k em{font-style:normal;letter-spacing:0;font-weight:700;color:var(--warn-ink);background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:999px;padding:0 8px;font-size:11px}
+.corner b{font:600 24px var(--mono);font-variant-numeric:tabular-nums}
+.corner span{font-size:12.5px;color:var(--ink-2)}
+.corner .meter{height:6px;border-radius:3px;background:var(--line-2);overflow:hidden;margin-top:4px}
+.corner .meter i{display:block;height:100%;background:var(--accent)}
+.corner.short{border-color:var(--warn-line)}
+.verdict{margin:16px 0 12px;border-radius:8px;padding:10px 14px;font-size:14px;border:1px solid var(--line);background:var(--field)}
+.verdict.bad{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.card h3{font-family:var(--serif);font-weight:600;font-size:16px;margin:16px 0 8px}
+.saved{display:grid;gap:8px;padding-bottom:4px}
+.saved .line{display:flex;gap:8px}
+.saved .line>*{min-width:0}
+.saved select,.saved input[type=text]{flex:1}
+input[type=text]{font:500 14px var(--sans);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%}
+input[type=text]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.danger{color:var(--warn-ink);border-color:var(--warn-line);background:var(--warn-bg)}
+button:disabled{opacity:.45;cursor:default}
+.status{font-size:12px;color:var(--ink-3);line-height:1.4}
+.status b{color:var(--ink-2);font-weight:600}
+.ai-form{display:grid;grid-template-columns:1fr;gap:10px}
+textarea{font:14px/1.6 var(--sans);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-height:96px;resize:vertical}
+textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ai-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.ai-bar .row{margin:0;grid-template-columns:auto 110px}
+.ai-note{font-size:12px;color:var(--ink-3)}
+.ideas{display:grid;gap:12px;margin-top:16px}
+.idea{border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 16px}
+.idea h4{margin:0;font-size:16px;font-weight:700}
+.idea .gain{text-align:right;font:600 20px var(--mono);color:var(--accent-ink);white-space:nowrap}
+.idea .gain small{display:block;font:11px var(--sans);color:var(--ink-3)}
+.idea p{margin:0;grid-column:1/-1;font-size:13.5px;color:var(--ink-2)}
+.idea .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:12px var(--mono);border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--ink-2);background:var(--field)}
+.chip.r-高{color:var(--warn-ink);border-color:var(--warn-line);background:var(--warn-bg)}
+.idea .step{grid-column:1/-1;font-size:13px;border-top:1px dashed var(--line);padding-top:8px}
+.idea.best{border-color:var(--accent)}
+.ai-sum{margin-top:12px;font-size:13.5px;color:var(--ink-2)}
+.kit-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.kit-list{display:grid;gap:12px;margin-top:14px}
+.kit-lv{font-family:var(--serif);font-weight:600;font-size:15px;margin:6px 0 -2px;color:var(--ink-2);display:flex;gap:10px;align-items:baseline}
+.kit-lv small{font:12px var(--sans);color:var(--ink-3)}
+.kit-empty{border:1px dashed var(--line);border-radius:8px;padding:16px;font-size:13.5px;color:var(--ink-2)}
+.exp{border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:10px}
+.exp.done{opacity:.78}
+.exp .top{display:flex;gap:10px;align-items:center}
+.exp .top input{flex:1;font-weight:700;font-size:15px;background:transparent;border-color:transparent}
+.exp .top input:hover,.exp .top input:focus{border-color:var(--line);background:var(--field)}
+.pact{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:14px}
+.pact input[type=text]{flex:1 1 220px;width:auto}
+.pact input[type=number]{width:70px}
+.pact input[type=date]{font:13px var(--mono);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:5px 6px}
+.state{font:12px var(--sans);border-radius:999px;padding:1px 10px;border:1px solid var(--line);background:var(--field);color:var(--ink-2);white-space:nowrap}
+.state.due{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.state.go{background:var(--accent);color:#fff;border-color:var(--accent)}
+.prog2{display:flex;align-items:center;gap:10px;font:12px var(--mono);color:var(--ink-3)}
+.prog2 .bar{flex:1;height:6px;border-radius:3px;background:var(--line-2);overflow:hidden}
+.prog2 .bar i{display:block;height:100%;background:var(--accent)}
+.dots{display:flex;flex-wrap:wrap;gap:3px}
+.dots i{width:9px;height:9px;border-radius:2px;background:var(--line-2)}
+.dots i.on{background:var(--accent)}
+.exp .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.exp details{margin:0}
+.refl{display:grid;gap:8px;margin-top:8px}
+.refl label{font-size:12.5px;color:var(--ink-2)}
+.refl textarea{min-height:56px}
+.verdicts{display:flex;flex-wrap:wrap;gap:6px}
+.verdicts button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.idea .add{grid-column:1/-1;justify-self:start}
+.hud{display:grid;grid-template-columns:auto 1fr auto;gap:6px 18px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:4px;background:var(--field)}
+@media (max-width:620px){.hud{grid-template-columns:1fr}}
+.hud .lvbadge{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font:700 18px var(--mono);line-height:1;text-align:center}
+.hud .lvbadge small{display:block;font:10px var(--mono);opacity:.75;letter-spacing:.08em}
+.hud .who b{font-family:var(--serif);font-size:17px}
+.hud .xpbar{height:8px;border-radius:4px;background:var(--line-2);overflow:hidden;margin:6px 0 3px}
+.hud .xpbar i{display:block;height:100%;background:var(--accent)}
+.hud .sub2{font:12px var(--mono);color:var(--ink-3)}
+.hud .streak{text-align:center;min-width:92px}
+.hud .streak b{display:block;font:700 26px var(--mono)}
+.hud .streak span{font-size:12px;color:var(--ink-2)}
+.hud .streak.cold b{color:var(--ink-3)}
+.badges{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;padding-top:8px;border-top:1px dashed var(--line)}
+.bdg{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.bdg.locked{opacity:.4;filter:grayscale(1)}
+.nextstep{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border-radius:8px;padding:12px 14px;background:var(--accent-soft);color:var(--ink)}
+.nextstep .lab{font-size:11.5px;letter-spacing:.12em;font-weight:700;color:var(--accent-ink)}
+.nextstep .txt{font-size:15px;font-weight:600;line-height:1.45}
+.nextstep.empty{background:var(--field);border:1px dashed var(--line)}
+.nextstep.clear{background:var(--field);border:1px solid var(--line)}
+.map{display:flex;align-items:center;gap:0;flex-wrap:wrap;row-gap:6px}
+.map i{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);background:var(--panel);flex:none}
+.map i.done{background:var(--accent)}
+.map i.now{box-shadow:0 0 0 4px var(--accent-soft)}
+.map b{width:18px;height:2px;background:var(--line);flex:none}
+.map b.done{background:var(--accent)}
+.map .flag{margin-left:8px;font:12px var(--mono);color:var(--ink-3)}
+.steps{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
+.steps li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center}
+.steps li input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.steps li input[type=text]{background:transparent;border-color:transparent;padding:4px 6px}
+.steps li input[type=text]:hover,.steps li input[type=text]:focus{background:var(--field);border-color:var(--line)}
+.steps li.done input[type=text]{text-decoration:line-through;color:var(--ink-3)}
+.steps .x{border:0;background:transparent;color:var(--ink-3);padding:2px 6px}
+.addstep{display:flex;gap:8px;margin-top:6px}
+.addstep input{flex:1}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:999px;padding:9px 18px;font:600 14px var(--sans);box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50}
+@media (prefers-reduced-motion:no-preference){.toast{animation:pop .35s ease}@keyframes pop{from{transform:translate(-50%,12px);opacity:0}to{transform:translate(-50%,0);opacity:1}}}
+.sheet{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:10px 22px;padding-top:10px;border-top:1px dashed var(--line)}
+@media (max-width:620px){.sheet{grid-template-columns:1fr}}
+.sheet h4{margin:0 0 6px;font-size:12px;letter-spacing:.12em;color:var(--ink-3);font-weight:700}
+.stat{display:grid;grid-template-columns:52px 1fr 92px;gap:8px;align-items:center;font-size:13px;margin-bottom:6px}
+.stat .nm{font-weight:700}
+.stat .bar{height:10px;border-radius:5px;background:var(--line-2);overflow:hidden;position:relative}
+.stat .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);opacity:.35}
+.stat .bar u{position:absolute;left:0;top:0;bottom:0;background:var(--accent);text-decoration:none}
+.stat .v{font:12px var(--mono);text-align:right;color:var(--ink-2)}
+.salt{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel);display:grid;gap:4px;align-content:start}
+.salt b{font:700 24px var(--mono)}
+.salt span{font-size:12.5px;color:var(--ink-2)}
+.salt .cls{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink)}
+.statchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--ink-3)}
+.statchips button{font-size:12px;padding:2px 10px;border-radius:999px}
+.statchips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.fbgrid{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:10px 14px;align-items:center;font-size:13.5px;color:var(--ink-2)}
+@media (max-width:620px){.fbgrid{grid-template-columns:1fr}}
+.fbpain{border:0;padding:12px 0 4px;margin:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--ink-2)}
+.fbpain legend{font-size:13.5px;color:var(--ink-2);margin-bottom:6px;letter-spacing:0;font-weight:400}
+.fbpain input,.check input{accent-color:var(--accent)}
+.fbl{display:block;font-size:13.5px;color:var(--ink-2);margin:10px 0 4px}
+.fb textarea{min-height:64px}
+#dash{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:8px 0 12px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.kpi b{display:block;font:600 22px var(--mono)}
+.kpi span{font-size:12px;color:var(--ink-3)}
+.kpi.ok{border-color:var(--accent)}
+.dream{grid-column:1/-1;border-radius:10px;padding:14px 16px;background:linear-gradient(135deg,var(--accent-soft),var(--panel));border:1px solid var(--accent)}
+.dream .dl{font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--accent-ink)}
+.drow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 14px;margin:6px 0}
+.drow div{display:grid}
+.drow b{font:700 22px var(--mono);color:var(--ink-2)}
+.drow .big b{font-family:var(--serif);font-weight:900;font-size:clamp(34px,5vw,48px);color:var(--accent-ink);line-height:1}
+.drow span{font-size:12px;color:var(--ink-3)}
+.drow i{font-style:normal;color:var(--ink-3);font-size:20px;padding-bottom:16px}
+.dnote{font-size:13px;color:var(--ink-2)}
+.mbar{height:8px;border-radius:4px;background:var(--line-2);overflow:hidden}
+.mbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#9085e9)}
+.exp.mastered{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.state.go2{background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent-soft)}
+.dreamin{margin-left:auto;font-size:12.5px;color:var(--ink-2)}
+.statchips input[type=number]{width:80px}
+.fbbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
+.fbbar p{margin:0;font-size:14.5px;font-weight:600}
+.exp.flash{box-shadow:0 0 0 4px var(--accent);transition:box-shadow .3s}
+.intro{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px 24px;margin-bottom:20px}
+@media (max-width:880px){.intro{grid-template-columns:minmax(0,1fr)}}
+.intro>*{min-width:0}
+.intro h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:0 0 6px}
+.intro p{margin:6px 0;font-size:14px;color:var(--ink-2);max-width:72ch}
+.rungs{list-style:none;margin:10px 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+@media (max-width:620px){.rungs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rungs li{background:var(--rung);border-radius:6px;padding:6px 10px;font-size:13px;display:grid}
+.rungs li span{font-size:11.5px;color:var(--ink-3)}
+.ideas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 8px}
+@media (max-width:620px){.ideas{grid-template-columns:1fr}}
+.idea-c{background:var(--field);border:1px solid var(--line-2);border-radius:8px;padding:10px 14px 10px 44px;position:relative}
+.idea-c .n{position:absolute;left:14px;top:10px;width:20px;height:20px;border-radius:50%;background:var(--rung-on);color:var(--rung-on-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.idea-c>b{font-size:14.5px;color:var(--ink)}
+.idea-c p{margin:4px 0 0;font-size:13.5px;line-height:1.65}
+.intro p.house-note{font-size:12.5px;color:var(--ink-3)}
+.house-note a{color:var(--accent-ink)}
+.lchart{margin:4px 0 0;grid-column:1/-1;border-top:1px solid var(--line-2);padding-top:14px}
+.lchart .lc-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;margin-bottom:4px}
+.lchart .lc-head b{font-size:13.5px;color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;color:var(--ink-2);font-size:12px;padding:4px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--rung-on);color:var(--rung-on-ink)}
+.lc-scroll{overflow-x:auto}
+.lc-scroll svg{display:block;width:100%;min-width:600px;height:auto}
+.lc-scroll text{font-family:var(--sans)}
+.lchart figcaption{font-size:12px;color:var(--ink-3);margin-top:4px}
+.quote{margin:0;border-left:3px solid var(--accent);padding:6px 0 6px 18px}
+.quote blockquote{margin:0;font-family:var(--serif);font-weight:900;font-size:clamp(22px,2.6vw,28px);line-height:1.25;color:var(--ink);text-wrap:balance}
+.quote figcaption{margin-top:10px;font-size:12.5px;color:var(--ink-3)}
+.magic{--m1:#fde7f3;--m2:#e9e4ff;--m3:#dff4ff;--mink:#5b3fb8;--mstar:#f5b400}
+.mg-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px 16px}
+.mg-head h2{margin:0 0 4px}
+.mg-draw{display:inline-flex;align-items:center;text-decoration:none;border:0;border-radius:999px;padding:10px 18px;font:700 14px var(--sans);color:#fff;background:linear-gradient(135deg,#ff7ac6,#8b6cff 55%,#4cc3ff);box-shadow:0 6px 16px rgba(139,108,255,.35);cursor:pointer;min-height:42px}
+.mg-draw:disabled{opacity:.6;cursor:wait}
+.mg-deck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+@media (max-width:880px){.mg-deck{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:78%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.mg-deck>*{scroll-snap-align:start}}
+.mcard{position:relative;border-radius:16px;padding:16px 16px 14px;color:#2d2350;background:linear-gradient(160deg,var(--c1),var(--c2));border:2px solid rgba(255,255,255,.7);box-shadow:0 8px 22px rgba(91,63,184,.14);display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.mcard::before{content:"✦";position:absolute;right:12px;top:8px;font-size:18px;color:rgba(255,255,255,.95)}
+.mcard::after{content:"✧";position:absolute;right:30px;top:26px;font-size:11px;color:rgba(255,255,255,.9)}
+.mcard.c0{--c1:#ffe3f1;--c2:#eadfff}.mcard.c1{--c1:#e3f3ff;--c2:#e7e3ff}.mcard.c2{--c1:#fff3d6;--c2:#ffe3ec}
+.mcard .sig{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.75);display:grid;place-items:center;font-size:24px}
+.mcard .tt{font:900 17px var(--serif);line-height:1.35}
+.mcard .pact{font-size:13.5px;line-height:1.6;background:rgba(255,255,255,.6);border-radius:10px;padding:8px 10px}
+.mcard .step{font-size:12.5px;line-height:1.55}
+.mcard .step b{color:var(--mink)}
+.mcard .lv{font-size:11.5px;color:#6a5d93}
+.mcard .pick{margin-top:auto;border:0;border-radius:999px;background:#fff;color:var(--mink);font:700 13px var(--sans);padding:8px 12px;cursor:pointer;min-height:38px}
+.mcard .pick:hover{background:#f6f2ff}
+.mcard.demo{opacity:.85}
+.mcard.demo .tag{position:absolute;left:12px;top:10px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:#fff;background:#8b6cff;border-radius:999px;padding:2px 8px}
+.mg-mine{margin-top:12px}
+.mg-mine .mcard{max-width:520px}
+.stamps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:4px 0 2px}
+.stamp{aspect-ratio:1;border-radius:50%;border:2px dashed rgba(91,63,184,.35);display:grid;place-items:center;font-size:11px;color:#8a7fb0;background:rgba(255,255,255,.45)}
+.stamp.on{border:0;background:radial-gradient(circle at 35% 30%,#fff6c8,#ffc94d 60%,#f5a400);color:#7a4a00;font-size:16px;box-shadow:0 3px 8px rgba(245,164,0,.35)}
+.stamp.new{animation:stampIn .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes stampIn{from{transform:scale(.2) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){.stamp.new{animation:none}}
+.checkin{border:0;border-radius:999px;padding:10px 16px;font:700 14px var(--sans);color:#fff;background:linear-gradient(135deg,#ff7ac6,#8b6cff);cursor:pointer;min-height:42px}
+.checkin:disabled{background:#cfc6ef;color:#fff;cursor:default}
+.mine-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.mine-row .cnt{font-size:13px;color:#5b4f86}
+.mine-row .swap{background:none;border:0;color:#6a5d93;font-size:12.5px;text-decoration:underline;cursor:pointer;padding:4px}
+.mg-done{font-size:13.5px;line-height:1.7;background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px}
+.gtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:4px 0 10px;scrollbar-width:none}
+.gtabs::-webkit-scrollbar{display:none}
+.gtabs button{flex:none;border-radius:999px;padding:5px 12px;font-size:13px;color:var(--ink-2);background:var(--field)}
+.gtabs button[aria-selected="true"]{background:var(--rung-on);color:var(--rung-on-ink);border-color:var(--rung-on)}
+.gpanel{background:var(--field);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;max-width:62ch}
+.gpanel p{margin:4px 0}
+.gpanel .g1{font-size:15px;color:var(--ink)}
+.gpanel .gex{font-size:13.5px;color:var(--ink-2);line-height:1.7}
+.gpanel .gnote{font-size:12.5px;color:var(--ink-3)}
+.gsteps{margin:6px 0 8px;padding-left:20px;font-size:13.5px;display:grid;gap:2px}
+.gpanel .tbl{margin:6px 0}
+.explain h3{font-family:var(--serif);font-weight:600;font-size:16px;margin:18px 0 6px;color:var(--ink)}
+.howto{margin:6px 0 10px;padding-left:22px;display:grid;gap:4px;max-width:80ch}
+.howtbl td,.howtbl th{text-align:left}
+.howtbl td:first-child{font-family:var(--sans);color:var(--ink-2)}
+.row small a{color:var(--accent-ink)}
+footer{margin-top:22px;font-size:12px;color:var(--ink-3);max-width:90ch}
+@media (prefers-reduced-motion:no-preference){.rung .prog,.lever .bar i{transition:width .3s ease}}
+/* ---- 手機優先 ---- */
+@media (max-width:620px){
+  body{padding-inline:16px;padding-block:18px calc(96px + env(safe-area-inset-bottom,0px))}
+  input[type=number],input[type=text],select,textarea{font-size:16px}  /* iOS 小於 16px 會自動放大 */
+  input[type=number],select,input[type=text]{min-height:42px}
+  button{min-height:40px;font-size:14px}
+  .row{grid-template-columns:minmax(0,1fr) 132px}
+  .intro{padding:18px 16px}
+  .hero{padding:18px 16px}
+  .card{padding-inline:16px}
+  header.top{margin-bottom:16px}
+}
+.start{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0}
+.start span{font-size:12.5px;color:var(--ink-3)}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;display:none;align-items:center;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(0,0,0,.08)}
+.dock .dk-t{flex:1;min-width:0;font-size:13px;color:var(--ink-2);line-height:1.35}
+.dock .dk-t b{display:block;font-size:16px;color:var(--ink)}
+.dock button,.dock .btn-a{flex:none}
+@media (max-width:880px){.dock{display:flex}.dock[hidden]{display:none}}
+/* 分享選單 */
+.res-share{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:14px;border-radius:12px;padding:10px 16px;background:var(--accent-soft);border:1px solid transparent;color:var(--accent-ink);font:700 14.5px var(--sans);cursor:pointer;min-height:44px}
+.res-share small{font-weight:400;font-size:12px;color:var(--ink-2)}
+.sp-res{width:100%;margin:10px 0 0}
+.shot-modal{position:fixed;inset:0;z-index:60;background:rgba(10,14,12,.72);display:grid;place-items:center;padding:16px;padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-bottom,0px))}
+.shot-box{background:var(--panel);border-radius:16px;padding:14px;width:min(440px,100%);max-height:100%;overflow:auto;display:grid;gap:10px}
+.shot-box img{width:100%;height:auto;border-radius:10px;display:block;max-height:62vh;object-fit:contain}
+.shot-row{display:flex;flex-wrap:wrap;gap:8px}
+.shot-row button{min-height:42px;border-radius:999px;padding:8px 16px}
+.shot-row .shot-main{background:var(--accent);border-color:var(--accent);color:#fff}
+.shot-row .shot-x{margin-left:auto;background:none;border:0;color:var(--ink-2)}
+.shot-dl{display:inline-flex;align-items:center;min-height:42px;padding:8px 16px;border-radius:999px;text-decoration:none;font:700 14px sans-serif;background:#ffffff22;color:inherit;border:1px solid currentColor}
+.shot-note{margin:0;font-size:12.5px;color:var(--ink-3)}
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:25;display:flex;gap:8px;align-items:center}
+.fab button{min-height:44px;border-radius:999px;padding:10px 18px;font-size:14px;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.fab-fb{background:var(--panel)}
+.btn-a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);font:500 14px var(--sans);text-decoration:none;color:var(--ink);background:var(--field)}
+.btn-a.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.fab .btn-a{min-height:44px;padding:10px 18px;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+@media (max-width:880px){.fab{display:none}}
+.share-pop{position:fixed;z-index:30;right:20px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.22)}
+@media (max-width:880px){.share-pop{left:0;right:0;bottom:0;width:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}}
+.sp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sp-head b{font-size:15px}
+.sp-x{border:0;background:none;font-size:16px;min-height:36px;padding:4px 10px;color:var(--ink-2)}
+#shareStatus{display:block;margin-top:8px}
+.share-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.share-grid a,.share-grid button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink);font:500 12.5px var(--sans);text-decoration:none;cursor:pointer;min-height:76px;justify-content:center}
+.share-grid a:hover,.share-grid button:hover{border-color:var(--ink-3)}
+.share-grid .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 12px var(--sans)}
+.ic.th{background:#000}.ic.ln{background:#06c755}.ic.ig{background:linear-gradient(45deg,#f09433,#dc2743 55%,#bc1888)}.ic.cp{background:var(--rung-on);color:var(--rung-on-ink)}
+.share-url{display:flex;gap:8px;margin-top:10px}
+.share-url input{flex:1;min-width:0;font:13px var(--mono);color:var(--ink-2);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>財富階梯計算機</h1>
+      <p class="sub q">現在的我，哪個決策最值得做？多存一點、加薪、投資，還是做副業？</p>
+      <p class="sub">重點不是你在第幾階，而是用數據找出此刻效益最大的那根槓桿。輸入你的資產、收入和投資方式，就能看到還要多久爬到下一階，以及這一階最該做的事。</p>
+      <p class="start"><button type="button" class="primary" id="goStart">開始試算 ↓</button><span>約 3 分鐘，數字只有你看得到</span></p>
+      <p class="sub note">預設值只是範例，請換成你自己的數字。金額單位是「萬」（美元則是「千」）。</p>
+    </div>
+    <span class="tag">依 Nick Maggiulli《The Wealth Ladder》以淨資產（美元）分級</span>
+  </header>
+
+  <section class="intro" aria-labelledby="introH">
+    <div class="intro-txt">
+      <h2 id="introH">什麼是財富階梯？</h2>
+      <p>資料科學家 Nick Maggiulli 在《The Wealth Ladder》裡，用<b>淨資產</b>（資產減負債）把財富分成 6 階。每往上一階，財富多 10 倍，也多一種「不用看價錢」的自由，從買菜、上餐廳、旅行，到買房。</p>
+      <div class="ideas">
+        <div class="idea-c"><span class="n">1</span><b>看資產花錢，不是看收入</b><p>收入會變，資產才是真正的底氣。花錢時看<b>流動資產</b>：房子再值錢，也不能拿來付晚餐。</p></div>
+        <div class="idea-c"><span class="n">2</span><b>每一階，用對槓桿</b><p>低階靠<b>多賺、多存</b>；越往上，越靠<b>資產自己成長</b>。</p></div>
+      </div>
+      <p class="house-note">有自住房？房子算「市價減房貸」。如果房子加上其他不能動用的資產超過淨資產一半，計算機會自動改用流動資產判斷你在哪一階。<a href="#houseHow">看例子</a></p>
+    </div>
+    <figure class="quote">
+      <blockquote>“What got you here won't get you there.”</blockquote>
+      <figcaption>Marshall Goldsmith，<cite>What Got You Here Won't Get You There</cite>（New York: Hyperion, 2007）<br>Nick Maggiulli 在《The Wealth Ladder》Level 4 → 5 引用：投資的威力大於工作</figcaption>
+    </figure>
+    <figure class="lchart" aria-labelledby="lcTitle">
+        <div class="lc-head"><b id="lcTitle">每一階都差 10 倍，越往上，一階的距離越遠</b>
+          <span class="seg" role="group" aria-label="刻度"><button type="button" id="lcLog" aria-pressed="true">每階等高</button><button type="button" id="lcLin" aria-pressed="false">實際比例</button></span></div>
+        <div class="lc-scroll"><svg id="lcSvg" viewBox="0 0 900 300" role="img" aria-label="財富階梯：6 階淨資產門檻、美國家庭比例、不用想的花費，以及你目前的位置"></svg></div>
+        <figcaption id="lcCap">美國家庭比例來自 Maggiulli 整理的 Fed 消費者財務調查（約數）。「不用想的花費」＝淨資產的 0.01%。</figcaption>
+      </figure>
+  </section>
+
+  <div class="grid">
+    <form class="panel inputs" id="f" autocomplete="off">
+      <fieldset class="saved">
+        <legend>我的試算</legend>
+        <div class="line"><select id="scSel" aria-label="已儲存的試算"><option value="">選擇已儲存的試算</option></select></div>
+        <div class="line"><input id="scName" type="text" maxlength="40" placeholder="幫這組設定取個名字" aria-label="試算名稱"><button type="button" class="primary" id="scSave">儲存</button></div>
+        <div class="line"><button type="button" id="scDel" disabled>刪除</button><span class="status" id="scStatus">只有你看得到・存在這台瀏覽器</span></div>
+      </fieldset>
+      <fieldset>
+        <legend>關於你</legend>
+        <div class="row"><label for="age">今年幾歲</label><span class="inp"><input id="age" type="number" step="1" min="15" max="100" value="35"><span class="u">歲</span></span></div>
+        <div class="row"><label for="sex">平均壽命參考<small>內政部 2025 簡易生命表</small></label>
+          <select id="sex"><option value="81.27">全體 81.27 歲</option><option value="84.75">女性 84.75 歲</option><option value="77.93">男性 77.93 歲</option></select></div>
+        <div class="row"><label for="life">預期壽命</label><span class="inp"><input id="life" type="number" step="0.5" value="81.27"><span class="u">歲</span></span></div>
+        <div class="row"><label for="sick">不健康的年數<small>國人平均約 8 年，生活習慣好可以縮短</small></label><span class="inp"><input id="sick" type="number" step="0.5" min="0" value="8"><span class="u">年</span></span></div>
+      </fieldset>
+      <fieldset>
+        <legend>幣別</legend>
+        <div class="row"><label for="cur">顯示幣別</label>
+          <select id="cur"><option value="TWD">新台幣 NT$</option><option value="USD">美元 US$</option></select></div>
+        <div class="row" id="fxRow"><label for="fx">匯率<small>1 美元 = ? 台幣</small></label><input id="fx" type="number" step="0.1" value="30.5"></div>
+      </fieldset>
+      <fieldset>
+        <legend>目前資產</legend>
+        <div class="row"><label for="a_cash">現金、存款<small>含緊急預備金</small></label><span class="inp"><input id="a_cash" data-money type="number" step="10" value="60"><span class="u">萬</span></span></div>
+        <div class="row"><label for="a_etf">分散型投資<small>ETF、指數基金</small></label><span class="inp"><input id="a_etf" data-money type="number" step="10" value="120"><span class="u">萬</span></span></div>
+        <div class="row"><label for="a_stock">單一個股<small>員工持股、ESPP 等</small></label><span class="inp"><input id="a_stock" data-money type="number" step="10" value="80"><span class="u">萬</span></span></div>
+        <div class="row"><label for="a_home">自住房現在市價</label><span class="inp"><input id="a_home" data-money type="number" step="10" value="0"><span class="u">萬</span></span></div>
+        <div class="row"><label for="a_other">其他不能隨時動用的資產<small>退休帳戶、保單價值等</small></label><span class="inp"><input id="a_other" data-money type="number" step="10" value="0"><span class="u">萬</span></span></div>
+        <div class="row"><label for="a_mort">房貸<small>自住房的貸款餘額</small></label><span class="inp"><input id="a_mort" data-money type="number" step="10" value="0"><span class="u">萬</span></span></div>
+        <div class="row"><label for="a_debt">其他負債<small>車貸、信貸、卡債</small></label><span class="inp"><input id="a_debt" data-money type="number" step="10" value="0"><span class="u">萬</span></span></div>
+        <div class="row"><label for="basis">用哪個判斷階層<small>自動：房子（市價減房貸）加上不能動用的資產，超過淨資產一半就改用流動資產。<a href="#houseHow">怎麼算？</a></small></label><select id="basis"><option value="auto">自動（建議）</option><option value="net">淨資產</option><option value="liquid">流動資產</option></select></div>
+      </fieldset>
+      <fieldset>
+        <legend>每月現金流（稅後）</legend>
+        <div class="row"><label for="inc">月薪實拿</label><span class="inp"><input id="inc" data-money type="number" step="0.5" value="11"><span class="u">萬</span></span></div>
+        <div class="row"><label for="exp">每月生活開銷<small>含房租、旅遊</small></label><span class="inp"><input id="exp" data-money type="number" step="0.5" value="6"><span class="u">萬</span></span></div>
+        <div class="row"><label for="stockBuy">每月買入單一個股<small>例如 ESPP 扣款</small></label><span class="inp"><input id="stockBuy" data-money type="number" step="0.5" value="0"><span class="u">萬</span></span></div>
+        <div class="row"><label for="investPct">剩下的錢投入 ETF 的比例 %<small>其餘留在現金</small></label><input id="investPct" type="number" step="5" min="0" max="100" value="80"></div>
+        <div class="row"><label for="side">副業月收入<small>稅後淨收入</small></label><span class="inp"><input id="side" data-money type="number" step="0.5" value="0"><span class="u">萬</span></span></div>
+        <div class="row"><label for="sideYear">副業幾年後開始</label><input id="sideYear" type="number" step="1" min="0" value="1"></div>
+        <div class="row"><label for="sideInvest">副業收入拿去投資的比例 %<small>其餘拿去花</small></label><input id="sideInvest" type="number" step="10" min="0" max="100" value="100"></div>
+      </fieldset>
+      <fieldset>
+        <legend>收入成長</legend>
+        <div class="row"><label for="raise">每年調薪 %</label><input id="raise" type="number" step="0.5" value="3"></div>
+        <div class="row"><label for="promoPct">每次升遷調薪 %</label><input id="promoPct" type="number" step="1" value="10"></div>
+        <div class="row"><label for="promoMax">預期還能升遷幾次<small>到天花板為止，0 = 不再升遷</small></label><input id="promoMax" type="number" step="1" min="0" value="2"></div>
+        <div class="row"><label for="promoEvery">每幾年升遷一次</label><input id="promoEvery" type="number" step="1" min="1" value="3"></div>
+        <div class="row"><label for="creep">加薪中花掉的比例 %<small>生活水準跟著膨脹</small></label><input id="creep" type="number" step="10" min="0" max="100" value="50"></div>
+      </fieldset>
+      <fieldset>
+        <legend>報酬率與通膨（名目，年）</legend>
+        <div class="row"><label for="r_etf">ETF 報酬 % <span class="real" id="rr_etf"></span></label><input id="r_etf" type="number" step="0.5" value="8"></div>
+        <div class="row"><label for="r_stock">單一個股報酬 % <span class="real" id="rr_stock"></span></label><input id="r_stock" type="number" step="0.5" value="8"></div>
+        <div class="row"><label for="r_cash">現金利率 % <span class="real" id="rr_cash"></span></label><input id="r_cash" type="number" step="0.25" value="1"></div>
+        <div class="row"><label for="infl">通膨 %</label><input id="infl" type="number" step="0.25" value="2"></div>
+        <div class="row"><label for="spread">悲觀／樂觀 ± %</label><input id="spread" type="number" step="0.5" min="0" value="2"></div>
+        <label class="check"><input id="stress" type="checkbox"> 壓力測試：單一個股現在立刻跌 40%</label>
+      </fieldset>
+      <div class="btns"><button type="button" id="reset">恢復範例數字</button></div>
+    </form>
+
+    <div class="results">
+      <section class="panel hero" aria-live="polite">
+        <div>
+          <div class="eyebrow" id="etaLabel">抵達 LEVEL 4 需要</div>
+          <div class="eta" id="eta">—</div>
+          <div class="eta-meta" id="etaMeta"></div>
+          <div class="facts">
+            <div class="fact"><b id="nwLocal">—</b><span id="nwLab">淨資產</span></div>
+            <div class="fact"><b id="nwUsd">—</b><span>換算美元</span></div>
+            <div class="fact"><b id="liq">—</b><span id="liqLab">流動資產（花錢看這個）</span></div>
+            <div class="fact" id="homeFact" hidden><b id="homeEq">—</b><span>房子真正屬於你的部分（市價減房貸）</span></div>
+            <div class="fact"><b id="saveRate">—</b><span>儲蓄率</span></div>
+            <div class="fact"><b id="cross">—</b><span>投資收益 &gt; 年儲蓄</span></div>
+            <div class="fact"><b id="sideFx">—</b><span>你的副業讓你提早</span></div>
+          </div>
+          <button type="button" class="res-share" id="resShare">📸 分享我的結果圖<small>不顯示金額和階層</small></button>
+          <div class="warn" id="basisNote" hidden></div>
+          <div class="warn" id="conc" hidden></div>
+        </div>
+        <div class="ladder" id="ladder" aria-label="財富階梯"></div>
+      </section>
+
+      <section class="panel card magic" id="magic">
+        <div class="mg-head">
+          <div><h2>🔮 把槓桿練成魔法</h2>
+          <p class="lede">知道最大的槓桿之後，下一步是真的動起來。到「小實驗召喚所」建立你的角色，每天召喚一張 7 天小實驗卡，打卡練成。</p></div>
+          <a class="mg-draw" href="https://rcchieh.github.io/wealth-ladder/summon/" target="_blank" rel="noopener">✨ 去召喚魔法卡</a>
+        </div>
+      </section>
+
+      <section class="panel card">
+        <h2>淨資產預估</h2>
+        <p class="lede">金額都換算成<b>今天的購買力</b>（實質）。縱軸用對數刻度，所以每一階的高度一樣；虛線是各階的門檻。</p>
+        <div class="chart-wrap" id="chartWrap"><svg id="chart" role="img" aria-label="淨資產預估曲線"></svg><div class="tip" id="tip" hidden></div></div>
+        <div class="keyline">
+          <span><i class="sw" style="background:var(--accent);height:3px;vertical-align:3px"></i>基準情境</span>
+          <span><i class="sw" style="background:var(--band);opacity:var(--band-op)"></i>悲觀～樂觀範圍</span>
+        </div>
+        <details><summary>看逐年數字表</summary><div class="tbl"><table id="tbl"></table></div></details>
+      </section>
+
+      <section class="panel card">
+        <h2>金三角：財富 × 時間 × 健康</h2>
+        <p class="lede">年輕時有時間、有健康，但沒有錢；中年有錢、有健康，但沒有時間；老了有錢、有時間，健康卻不在了。在每個年紀，把手上多的那一角，換成缺的那一角。</p>
+        <div class="tl" id="tl" aria-label="人生時間軸"></div>
+        <div class="tri3" id="tri3"></div>
+        <div class="verdict" id="verdict"></div>
+        <h3 id="triTitle">現在最該做的事</h3>
+        <ol class="todo" id="triTodo"></ol>
+      </section>
+
+      <div class="two">
+        <section class="panel card">
+          <h2>你最大的槓桿</h2>
+          <p class="lede">各調整一項，看能提早幾年抵達下一階。最上面那項，就是你現在 CP 值最高的努力方向。</p>
+          <div id="levers"></div>
+        </section>
+        <section class="panel card">
+          <h2 id="todoTitle">這一階最該做的事</h2>
+          <p class="lede" id="todoLede"></p>
+          <ol class="todo" id="todo"></ol>
+          <div class="rules">
+            <div class="rule"><b id="r001">—</b><span>0.01% 法則（以流動資產計）：低於這個金額的花費不用多想</span></div>
+            <div class="rule"><b id="r1">—</b><span>1% 法則（以淨資產計）：機會的價值高於這個金額才值得花心思</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+      <section class="panel card explain" id="gloss">
+        <h2>名詞說明</h2>
+        <div class="gtabs" role="tablist" aria-label="名詞">
+          <button type="button" role="tab" id="gt-real" aria-controls="gp-real" aria-selected="true">實質報酬</button>
+          <button type="button" role="tab" id="gt-cross" aria-controls="gp-cross" aria-selected="false" tabindex="-1">交叉點</button>
+          <button type="button" role="tab" id="gt-stock" aria-controls="gp-stock" aria-selected="false" tabindex="-1">單一個股</button>
+          <button type="button" role="tab" id="gt-house" aria-controls="gp-house" aria-selected="false" tabindex="-1">有房子怎麼算</button>
+        </div>
+        <div class="gpanel" role="tabpanel" id="gp-real" aria-labelledby="gt-real">
+          <p class="g1">扣掉通膨後，錢<b>真正</b>變多了多少。</p>
+          <p class="gex">投資賺 8%，同一年物價漲 2% → 實質報酬約 <b>6%</b>。</p>
+          <p class="gnote">本頁全部用實質金額計算，算出來的數字就是今天的購買力。</p>
+        </div>
+        <div class="gpanel" role="tabpanel" id="gp-cross" aria-labelledby="gt-cross" hidden>
+          <p class="g1">一年的<b>投資收益</b>，超過一年能<b>存下來的錢</b>。</p>
+          <p class="gex">交叉點之前：多存錢、加薪最有效。<br>交叉點之後：資產自己長得比你存得快。</p>
+        </div>
+        <div class="gpanel" role="tabpanel" id="gp-stock" aria-labelledby="gt-stock" hidden>
+          <p class="g1">預期報酬可以填得和 ETF 一樣，但<b>波動大很多</b>。</p>
+          <p class="gex">勾選上面的「壓力測試」，看看它跌 40% 時會晚幾年。</p>
+        </div>
+        <div class="gpanel" role="tabpanel" id="gp-house" aria-labelledby="gt-house" hidden>
+          <p class="g1" id="houseHow">錢大多卡在房子裡，就看<b>手上能動用的錢</b>。</p>
+          <ol class="gsteps">
+            <li><b>房子屬於你的部分</b> = 市價 − 房貸</li>
+            <li>它加上其他不能動用的資產，<b>超過淨資產一半</b> → 改用流動資產判斷階層</li>
+          </ol>
+          <div class="tbl"><table class="howtbl">
+            <tr><th>房子 2,000 萬・流動 380 萬</th><th>A：房貸 800 萬</th><th>B：房貸 1,800 萬</th></tr>
+            <tr><td>屬於你的部分</td><td>1,200 萬</td><td>200 萬</td></tr>
+            <tr><td>佔淨資產</td><td>76%（超過一半）</td><td>34%</td></tr>
+            <tr><td>用什麼判斷</td><td><b>流動資產 380 萬</b></td><td><b>淨資產 580 萬</b></td></tr>
+          </table></div>
+          <p class="gnote">A 看起來比較有錢，但能用的只有 380 萬；B 的房子大多還是銀行的，直接看淨資產就好。</p>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="dock" id="dock" hidden>
+    <div class="dk-t"><b id="dkMain">—</b><span id="dkSub"></span></div>
+    <a class="btn-a" id="dkFb" target="_blank" rel="noopener" href="https://docs.google.com/forms/d/e/1FAIpQLSeSHMRJA2FxhyhOGMp6OqYmRweTcOnaQxnyK_2YDo0rqmRrKg/viewform" aria-label="告訴我怎麼讓它更好">💬</a>
+    <button type="button" id="dkShare" aria-controls="shareSheet" aria-expanded="false">分享</button>
+    <button type="button" class="primary" id="dkGo">看結果</button>
+  </div>
+  <div class="fab" id="fab">
+    <a class="btn-a fab-fb" id="fabFb" target="_blank" rel="noopener" href="https://docs.google.com/forms/d/e/1FAIpQLSeSHMRJA2FxhyhOGMp6OqYmRweTcOnaQxnyK_2YDo0rqmRrKg/viewform">💬 告訴我怎麼更好</a>
+    <button type="button" class="primary" id="fabShare" aria-controls="shareSheet" aria-expanded="false">分享給朋友</button>
+  </div>
+        <div class="share-pop" id="shareSheet" role="dialog" aria-label="分享給朋友" hidden>
+          <div class="sp-head"><b>分享給朋友</b><button type="button" class="sp-x" id="shClose" aria-label="關閉">✕</button></div>
+          <div class="share-grid">
+            <a id="shTh" target="_blank" rel="noopener"><span class="ic th" aria-hidden="true">@</span>Threads</a>
+            <a id="shLn" target="_blank" rel="noopener"><span class="ic ln" aria-hidden="true">LINE</span>LINE</a>
+            <a id="shIg" href="https://www.instagram.com/" target="_blank" rel="noopener"><span class="ic ig" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff"/></svg></span>Instagram</a>
+            <button type="button" id="shCp"><span class="ic cp" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span>複製連結</button>
+          </div>
+          <div class="share-url"><input id="shUrl" readonly aria-label="分享連結"></div>
+          <button type="button" class="res-share sp-res" id="resShare2">📸 分享我的結果圖<small>不顯示金額和階層</small></button>
+          <span class="ai-note" id="shareStatus"></span>
+        </div>
+  <footer>簡化模型：不含稅、手續費和每年報酬的波動，負債假設維持不變。僅供規劃參考，不構成投資建議。你輸入和儲存的數字只有你自己看得到，分享這個網頁時，別人只會看到範例數字。</footer>
+</div>
+
+<script>
+(() => {
+const LEVELS = [
+  {lv:1, lo:0,     hi:1e4,  name:"月光", fz:"靠下一份薪水過活"},
+  {lv:2, lo:1e4,   hi:1e5,  name:"超市自由", fz:"買菜不看價錢"},
+  {lv:3, lo:1e5,   hi:1e6,  name:"餐廳自由", fz:"點菜不看價錢"},
+  {lv:4, lo:1e6,   hi:1e7,  name:"旅行自由", fz:"旅行不看價錢"},
+  {lv:5, lo:1e7,   hi:1e8,  name:"房子自由", fz:"買房不看價錢"},
+  {lv:6, lo:1e8,   hi:Infinity, name:"影響力自由", fz:"有能力改變世界"}
+];
+const TODO = {
+  1:{lede:"現在的重點是先有一點緩衝，不要再被下一筆帳單追著跑。", items:[
+    "<b>先存 1 個月的生活費</b>當作緩衝，放在獨立帳戶，不和日常花費混在一起。",
+    "<b>先還清高利率負債</b>（信用卡循環、預借現金）。還掉 15% 利率的債，等於穩賺 15%。",
+    "<b>收入是最大的槓桿</b>：換工作、學一項技能、加班或接案，都比任何投資有用。",
+    "記帳 1 個月，找出每月最大的 3 個漏洞。"]},
+  2:{lede:"開始建立「存錢、投資」的自動化流程，讓錢自己長大。", items:[
+    "<b>把緊急預備金存到 3–6 個月</b>的生活費。",
+    "<b>薪水一入帳就自動轉出</b>，定期定額買低成本的指數 ETF，儲蓄率先衝到 20% 以上。",
+    "<b>投資自己的職涯</b>：這一階收入成長的效果，遠大於投資報酬。",
+    "加薪時至少存一半，不要讓生活水準和薪水一起膨脹。"]},
+  3:{lede:"薪水仍是主要引擎，等到交叉點之後，資產才會開始自己長大。", items:[
+    "<b>每次加薪都把多的錢自動加進定期定額</b>，這是最省力、效果也最大的一步。",
+    "<b>單一個股降到淨資產 20% 以下</b>：員工持股、ESPP 賣出後轉成全球分散的 ETF。",
+    "<b>用好公司福利</b>：員工認股折扣、退休金自提、公司提撥，這些都是無風險的報酬。",
+    "<b>建立第二條收入線</b>（副業、接案、數位產品），先求驗證，不求取代薪水。",
+    "用 1% 法則挑機會：價值不到淨資產 1% 的機會，不值得花時間。"]},
+  4:{lede:"資產報酬開始超越薪水，現在最重要的是「不要犯大錯」。", items:[
+    "<b>保住比多賺更重要</b>：避免高槓桿、集中投資和看不懂的商品，損失 30% 就要好幾年才補得回來。",
+    "<b>做好資產配置和每年再平衡</b>，股債比例要配合你的年紀和需要用錢的時間。",
+    "<b>稅務規劃</b>：海外所得、股利、贈與與遺產稅，開始值得找專業人士諮詢。",
+    "要繼續往上爬，多半需要<b>擁有權</b>：創業、公司股權、自己的事業，光靠存錢很難到 Level 5。"]},
+  5:{lede:"財富主要來自擁有的事業或股權，時間比錢更稀缺。", items:[
+    "<b>把時間花在最高價值的事上</b>，其他工作盡量委外。",
+    "<b>建立信託、遺產與傳承規劃</b>。",
+    "<b>分散事業風險</b>：主要財富不要只綁在同一間公司。",
+    "決定「多少才夠」，把多出來的部分用在你在乎的人和事上。"]},
+  6:{lede:"你已經在最高一階了。", items:[
+    "<b>思考傳承與影響力</b>：基金會、慈善、投資下一代。",
+    "建立長期治理機制，讓財富撐過下一代。"]}
+};
+const IDS=["age","sex","life","sick","cur","fx","a_cash","a_etf","a_stock","a_home","a_other","a_mort","a_debt","basis","inc","exp","stockBuy","investPct","side","sideYear","sideInvest","raise","promoPct","promoMax","promoEvery","creep","r_etf","r_stock","r_cash","infl","spread"];
+const $=id=>document.getElementById(id);
+const DEFAULTS={}; IDS.forEach(id=>DEFAULTS[id]=$(id).value); DEFAULTS.stress=false;
+const KEY="wealth-ladder-v4";
+const MONEY=[...document.querySelectorAll("[data-money]")].map(e=>e.id);
+const unitOf=c=>c==="TWD"?1e4:1e3;
+const setUnits=c=>MONEY.forEach(id=>{const u=$(id).nextElementSibling; if(u) u.textContent=c==="TWD"?"萬":"千";});
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s){IDS.forEach(id=>{if(s[id]!=null)$(id).value=s[id]}); $("stress").checked=!!s.stress;}}catch(e){}
+let prevCur=$("cur").value; setUnits(prevCur);
+$("cur").addEventListener("change",()=>{const c=$("cur").value; if(c===prevCur) return; const fx=Math.max(parseFloat($("fx").value)||30.5,0.0001);
+  MONEY.forEach(id=>{const v=parseFloat($(id).value); if(!isFinite(v)) return; let base=v*unitOf(prevCur); base = c==="USD"? base/fx : base*fx; const nv=base/unitOf(c); $(id).value=+nv.toFixed(nv>=100?0:1);});
+  prevCur=c; setUnits(c);});
+
+function read(){
+  const cur=$("cur").value;
+  const n=id=>{const v=parseFloat($(id).value);return (isFinite(v)?v:0)*(MONEY.includes(id)?unitOf(cur):1)};
+  return {cur, fx: cur==="USD"?1:Math.max(n("fx"),0.0001),
+    cash:n("a_cash"), etf:n("a_etf"), stock:n("a_stock"), other:n("a_other"), home:n("a_home"), mort:n("a_mort"), debt:n("a_debt"), basis:(["auto","net","liquid"].includes($("basis").value)? $("basis").value : ($("basis").value="auto")),
+    inc:n("inc"), exp:n("exp"), stockBuy:n("stockBuy"), investPct:Math.min(Math.max(n("investPct"),0),100)/100,
+    side:n("side"), sideYear:Math.max(n("sideYear"),0), sideInvest:Math.min(Math.max(isFinite(parseFloat($("sideInvest").value))?parseFloat($("sideInvest").value):100,0),100)/100,
+    raise:n("raise")/100, promoPct:n("promoPct")/100, promoEvery:Math.max(Math.round(n("promoEvery")),1), promoMax:Math.max(Math.round(n("promoMax")),0), creep:Math.min(Math.max(n("creep"),0),100)/100,
+    r_etf:n("r_etf")/100, r_stock:n("r_stock")/100, r_cash:n("r_cash")/100, infl:n("infl")/100, spread:n("spread")/100,
+    stress:$("stress").checked, age:n("age"), life:n("life"), sick:Math.max(n("sick"),0)};
+}
+const real=(r,i)=>(1+r)/(1+i)-1;
+const MAXM=720;
+
+function sim(p, adj={}){
+  const dr=adj.dr||0, extraSave=adj.extraSave||0, dRaise=adj.dRaise||0, sideAdd=adj.sideAdd||0;
+  const me=Math.pow(1+real(p.r_etf+dr,p.infl),1/12), ms=Math.pow(1+real(p.r_stock+dr*(adj.stockMul??1),p.infl),1/12), mc=Math.pow(1+real(p.r_cash,p.infl),1/12);
+  let cash=p.cash, etf=p.etf, stock=p.stock*(p.stress?0.6:1);
+  let inc=p.inc, exp=p.exp-extraSave, promos=0;
+  const pts=[]; let crossYear=null, yrGain=0, yrSave=0;
+  const nw=()=> p.useLiquid? cash+etf+stock-p.debt : cash+etf+stock+(p.homeUsed??p.home)+p.other-p.mort-p.debt;
+  pts.push(nw());
+  for(let m=1;m<=MAXM;m++){
+    if(m>1 && (m-1)%12===0){
+      const y=(m-1)/12;
+      let g=(1+p.raise+dRaise);
+      if(promos<p.promoMax && y%p.promoEvery===0){ g*=1+p.promoPct; promos++; }
+      const ni=inc*g/(1+p.infl); const d=ni-inc; inc=ni;
+      exp=exp/(1)+ (d>0? d*p.creep : 0);
+    }
+    const sideP=(m>p.sideYear*12? p.side:0)*(adj.noSide?0:1);
+    const sideI=sideP*p.sideInvest + (m>(adj.sideStartM??12)? sideAdd*(adj.sideRamp? Math.min(1,(m-(adj.sideStartM??12))/adj.sideRamp):1):0);
+    const save=inc-exp;
+    const g0=etf*(me-1)+stock*(ms-1)+cash*(mc-1);
+    etf*=me; stock*=ms; cash*=mc;
+    if(save>0){
+      const sb=Math.min(p.stockBuy,save); stock+=sb;
+      const rest=save-sb; etf+=rest*p.investPct; cash+=rest*(1-p.investPct);
+    } else { cash+=save; if(cash<0){etf+=cash;cash=0;} }
+    etf+=sideI;
+    yrGain+=g0; yrSave+=save+sideI;
+    if(m%12===0){ if(crossYear===null && yrGain>yrSave && yrSave>0) crossYear=m/12; yrGain=0; yrSave=0; }
+    pts.push(nw());
+  }
+  return {pts, crossYear};
+}
+const levelOf=usd=>LEVELS.find(L=>usd<L.hi)||LEVELS[5];
+const firstHit=(pts,t)=>{for(let i=0;i<pts.length;i++) if(pts[i]>=t) return i; return null;};
+
+function fmt(v,p){
+  const neg=v<0; v=Math.abs(v); let s;
+  if(p.cur==="TWD"){
+    if(v>=1e8) s=(v/1e8).toFixed(v>=1e9?1:2)+"億";
+    else if(v>=1e4) s=Math.round(v/1e4).toLocaleString("en-US")+"萬";
+    else s=Math.round(v).toLocaleString("en-US");
+    s="NT$"+s;
+  } else s=fmtUsd(v);
+  return (neg?"−":"")+s;
+}
+function fmtUsd(v){
+  const a=Math.abs(v);
+  if(a>=1e9) return "$"+(v/1e9).toFixed(1)+"B";
+  if(a>=1e6) return "$"+(a>=1e7? Math.round(v/1e6) : +(v/1e6).toFixed(2))+"M";
+  if(a>=1e3) return "$"+Math.round(v/1e3)+"k";
+  return "$"+Math.round(v);
+}
+const now=new Date();
+function when(m){ const d=new Date(now.getFullYear(), now.getMonth()+m, 1); return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0"); }
+const yrs=m=>(m/12).toFixed(1);
+
+let lcLinear=false, lcUsd=null;
+const LC_HH=["約 20%","約 20%","約 40%","約 18%","約 2%","< 0.01%"];
+function drawLadderChart(){
+  const svg=$("lcSvg"); if(!svg) return;
+  const W=900,H=300,ml=84,mr=8,mt=40,mb=78, bw=(W-ml-mr)/6, ph=H-mt-mb;
+  const lo=i=> i===0? 1e3 : LEVELS[i].lo;
+  const y=v=> lcLinear ? mt+ph*(1-Math.min(v,1.25e8)/1.25e8) : mt+ph*(1-(Math.log10(Math.max(v,1e3))-3)/(8.9-3));
+  const fx=parseFloat($("fx").value)||30.5, twd=$("cur").value!=="USD";
+  const nt=u=> twd? "NT$"+(u*fx>=1e4? (u*fx/1e4).toLocaleString("en-US")+"萬" : Math.round(u*fx).toLocaleString("en-US")) : "$"+u.toLocaleString("en-US");
+  const free=[0,1,10,100,1000,10000];
+  let o="";
+  // 階梯線
+  let d=`M${ml},${y(lo(0))}`;
+  for(let i=0;i<6;i++){ const x1=ml+bw*(i+1); d+=` H${x1}`; if(i<5) d+=` V${y(lo(i+1))}`; }
+  const curLv= lcUsd==null? 0 : levelOf(lcUsd).lv;
+  for(let i=0;i<6;i++){
+    const x0=ml+bw*i, cx=x0+bw/2, yy=y(lo(i)), on=i+1===curLv;
+    if(on) o+=`<rect x="${x0+2}" y="${mt-34}" width="${bw-4}" height="${H-mt+26}" rx="6" fill="var(--accent-soft)" opacity=".55"/>`;
+    o+=`<line x1="${x0}" x2="${x0}" y1="${mt-30}" y2="${H-8}" stroke="var(--line-2)" stroke-width="1"/>`;
+    const ty=Math.max(yy-26, mt-24);
+    o+=`<text x="${cx}" y="${ty}" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">L${i+1} ${LEVELS[i].name}</text>`;
+    o+=`<text x="${cx}" y="${ty+14}" text-anchor="middle" font-size="11" fill="var(--ink-3)">${i===0? "< $10k" : i===5? "$100M+" : fmtUsd(LEVELS[i].lo)+"–"+fmtUsd(LEVELS[i].hi)}</text>`;
+    o+=`<text x="${cx}" y="${H-mb+30}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-2)">${LC_HH[i]}</text>`;
+    o+=`<text x="${cx}" y="${H-mb+58}" text-anchor="middle" font-size="12" fill="var(--ink-2)">${i===0? "每一塊都要想" : nt(free[i])}</text>`;
+  }
+  o+=`<text x="4" y="${H-mb+30}" font-size="11" fill="var(--ink-3)">美國家庭比例</text>`;
+  o+=`<text x="4" y="${H-mb+52}" font-size="11" fill="var(--ink-3)">不用想的花費</text><text x="4" y="${H-mb+66}" font-size="10" fill="var(--ink-3)">（淨資產 0.01%）</text>`;
+  o+=`<text x="4" y="${mt+10}" font-size="11" fill="var(--ink-3)">淨資產門檻</text><text x="4" y="${mt+24}" font-size="10" fill="var(--ink-3)">${lcLinear? "（實際比例）":"（每格 ×10）"}</text>`;
+  o+=`<line x1="4" x2="${W-mr}" y1="${H-mb+10}" y2="${H-mb+10}" stroke="var(--line)" stroke-width="1"/>`;
+  o+=`<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>`;
+  // 你在這裡
+  if(lcUsd!=null){
+    const L=levelOf(lcUsd), i=L.lv-1, a=lo(i), bnd=i===5? 1e9 : LEVELS[i].hi;
+    const t= lcLinear? Math.min(Math.max((lcUsd-a)/(bnd-a),0),1) : Math.min(Math.max((Math.log10(Math.max(lcUsd,1e3))-Math.log10(a))/(Math.log10(bnd)-Math.log10(a)),0),1);
+    const px=ml+bw*i+8+(bw-16)*t, py=y(lo(i));
+    o+=`<circle cx="${px}" cy="${py}" r="6.5" fill="var(--ink)" stroke="var(--panel)" stroke-width="2.5"/>`;
+    o+=`<text x="${px}" y="${py+20}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">你</text>`;
+  }
+  svg.innerHTML=o;
+  $("lcLog").setAttribute("aria-pressed",String(!lcLinear)); $("lcLin").setAttribute("aria-pressed",String(lcLinear));
+  $("lcCap").textContent= (lcLinear? "實際比例：前三階幾乎貼在地上，L5 到 L6 的一步，比前面所有階加起來還大。" : "每階等高（對數刻度）：每往上一階，金額都多 10 倍。")
+    + "美國家庭比例來自 Maggiulli 整理的 Fed 消費者財務調查（約數）。「不用想的花費」＝淨資產的 0.01%。";
+}
+$("lcLog").addEventListener("click",()=>{ lcLinear=false; drawLadderChart(); });
+$("lcLin").addEventListener("click",()=>{ lcLinear=true; drawLadderChart(); });
+let SUM={}, SHARE_D=null, SHARE_LEVERS=[], SHARE_TIPS=[];
+function render(){
+  const p=read();
+  try{const s={}; IDS.forEach(id=>s[id]=$(id).value); s.stress=p.stress; localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}
+  $("fxRow").hidden = p.cur==="USD";
+  ["etf","stock","cash"].forEach(k=>{$("rr_"+k).textContent="實質 "+(real(p["r_"+k],p.infl)*100).toFixed(1)+"%";});
+
+  const stock0=p.stock*(p.stress?0.6:1), liqA=p.cash+p.etf+stock0;
+  p.homeUsed=p.home;   // 房子用市價；漲價也算資產，扣掉房貸才是你的
+  const lockedEq=Math.max(p.homeUsed-p.mort,0)+p.other, netW=liqA+p.homeUsed+p.other-p.mort-p.debt, liqW=liqA-p.debt;
+  const illiq= netW>0? Math.min(lockedEq/netW,1) : (lockedEq>0?1:0);
+  p.useLiquid= p.basis==="liquid" || (p.basis==="auto" && illiq>0.5);
+
+  const base=sim(p), lo=sim({...p,r_etf:p.r_etf-p.spread,r_stock:p.r_stock-p.spread*2}), hi=sim({...p,r_etf:p.r_etf+p.spread,r_stock:p.r_stock+p.spread*2});
+  const nw0=base.pts[0], usd0=nw0/p.fx, L=levelOf(usd0), next=LEVELS[Math.min(L.lv,5)];
+  const target=next.lo*p.fx;
+  const mB=firstHit(base.pts,target), mL=firstHit(lo.pts,target), mH=firstHit(hi.pts,target);
+  const top=L.lv===6;
+  SHARE_D={top, mB, mL, mH, pts:base.pts, target};
+
+  $("etaLabel").textContent= top? "你已經在最高一階" : `抵達 LEVEL ${next.lv}・${next.name}（${fmt(target,p)}）需要`;
+  if(top){ $("eta").innerHTML="Level 6"; $("etaMeta").textContent=""; }
+  else if(mB===null){ $("eta").innerHTML="60<span class=\"unit\">年內到不了</span>"; $("etaMeta").textContent="試著提高儲蓄率、加薪或報酬率，看看哪個槓桿最有效。"; }
+  else { $("eta").innerHTML=`${yrs(mB)}<span class="unit">年</span>`;
+    $("etaMeta").textContent=`約 ${when(mB)}・範圍 ${mH===null?"—":yrs(mH)}–${mL===null?"60+":yrs(mL)} 年（樂觀–悲觀）`; }
+
+  $("nwLocal").textContent=`${fmt(netW,p)}・L${levelOf(netW/p.fx).lv}`;
+  $("nwLab").textContent= "淨資產"+(p.home>0?"（房子市價減房貸）":"")+(p.useLiquid? "" : "・用這個判斷階層");
+  $("liqLab").textContent= p.useLiquid? "流動資產（用這個判斷階層）" : "流動資產（花錢看這個）";
+  $("basisNote").hidden=!(p.useLiquid&&p.basis==="auto");
+  $("basisNote").textContent=`房子扣掉房貸，加上不能動用的資產，佔了淨資產的 ${(illiq*100).toFixed(0)}%，所以改用流動資產判斷你在哪一階，比較貼近你真正能用的錢。`;
+  $("homeFact").hidden=!(p.home>0); $("homeEq").textContent=fmt(p.home-p.mort,p);
+  $("nwUsd").textContent=fmtUsd(usd0);
+  lcUsd= Math.max(usd0,0); drawLadderChart();
+  $("dkMain").textContent= top? "你在 L6" : (mB===null? `L${L.lv} → L${next.lv}：60 年內到不了` : `L${L.lv} → L${next.lv}：還要 ${yrs(mB)} 年`);
+  $("dkSub").textContent= top? "最高一階" : `約 ${mB===null? "—" : when(mB)}・改數字會即時更新`;
+  if(top||p.side<=0||mB===null){ $("sideFx").textContent= p.side>0&&mB===null? "還不夠" : "—"; }
+  else { const m0=firstHit(sim(p,{noSide:true}).pts,target); $("sideFx").textContent= m0===null? "從到不了變成到得了" : ((m0-mB)/12).toFixed(1)+" 年"; }
+  const liq0=Math.max(liqW,0); $("liq").textContent=`${fmt(liqW,p)}・L${levelOf(Math.max(liqW,0)/p.fx).lv}`;
+  const sr=p.inc>0?(p.inc-p.exp)/p.inc:0; $("saveRate").textContent=(sr*100).toFixed(0)+"%";
+  // 匿名摘要：只有區間和是／否，沒有任何金額
+  SUM={level:L.lv, yearsToNext: top? 0 : (mB===null? null : Math.round(mB/6)/2), basis: p.useLiquid?"流動資產":"淨資產",
+    saveRate: sr<0.1?"<10%":sr<0.3?"10–30%":sr<0.5?"30–50%":"50%+", hasHome:p.home>0, hasSide:p.side>0,
+    stockHeavy: nw0>0 && p.stock/nw0>0.2, currency:p.cur};
+  $("cross").textContent= base.crossYear===null? "60 年內未到" : (base.crossYear<=1? "已達成" : `${base.crossYear} 年後（${when(base.crossYear*12).slice(0,4)}）`);
+
+  const conc= nw0>0? p.stock/nw0 : 0;
+  const cw=$("conc");
+  if(conc>0.2){ cw.hidden=false; cw.textContent=`⚠ 單一個股佔${p.useLiquid?"流動資產":"淨資產"} ${(conc*100).toFixed(0)}%。如果它跌 40%，資產會少 ${fmt(p.stock*0.4,p)}。建議分散到 20% 以下，可以勾選壓力測試看看影響。`; }
+  else cw.hidden=true;
+
+  // ladder
+  const lad=$("ladder"); lad.textContent="";
+  [...LEVELS].reverse().forEach(R=>{
+    const d=document.createElement("div"); d.className="rung"+(R.lv===L.lv?" on":"")+(R.lv===next.lv&&!top?" next":"");
+    const rg = R.hi===Infinity? `${fmtUsd(R.lo)}+` : `${fmtUsd(R.lo)}–${fmtUsd(R.hi)}`;
+    d.innerHTML=`<span class="lv">L${R.lv}</span><span class="fz"></span><span class="rg">${rg}</span>`;
+    d.querySelector(".fz").textContent=R.name+(R.lv===L.lv?"・你在這裡":"");
+    if(R.lv===L.lv && R.hi!==Infinity){
+      const loB=Math.max(R.lo,1000), pct=Math.min(Math.max((Math.log10(Math.max(usd0,loB))-Math.log10(loB))/(Math.log10(R.hi)-Math.log10(loB)),0),1);
+      const b=document.createElement("i"); b.className="prog"; b.style.width=(pct*100).toFixed(1)+"%"; d.appendChild(b);
+      d.title=`本階進度 ${(pct*100).toFixed(0)}%（對數刻度）`;
+    }
+    lad.appendChild(d);
+  });
+
+  drawChart(p, base.pts, lo.pts, hi.pts, mB, mL, L, top);
+  drawLevers(p, mB, target, top);
+  drawTriangle(p, mB, L, next, top, usd0, nw0);
+
+  const T=TODO[L.lv];
+  $("todoTitle").textContent= top? "Level 6 最該做的事" : `Level ${L.lv} → ${next.lv} 最該做的事`;
+  $("todoLede").textContent=T.lede;
+  $("todo").innerHTML=T.items.map(s=>`<li>${s}</li>`).join("");
+  $("r001").textContent=fmt(liq0*0.0001,p);
+  $("r1").textContent=fmt(Math.max(nw0,0)*0.01,p);
+}
+
+function drawChart(p, B, Lo, Hi, mB, mL, L, top){
+  const wrap=$("chartWrap"), svg=$("chart");
+  const W=Math.max(wrap.clientWidth,320), H=310, ml=70, mr=14, mt=12, mb=40;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.setAttribute("width",W); svg.setAttribute("height",H);
+  let years = mB!==null? Math.ceil(mB/12)+3 : 30;
+  if(mL!==null) years=Math.max(years, Math.min(Math.ceil(mL/12)+1, 50));
+  years=Math.min(Math.max(years,8),50);
+  const M=years*12;
+  const floor=1000*p.fx;
+  const cl=v=>Math.max(v,floor);
+  let vmin=Infinity, vmax=0;
+  for(let m=0;m<=M;m++){vmin=Math.min(vmin,cl(Lo[m]),cl(B[m]));vmax=Math.max(vmax,cl(Hi[m]));}
+  const nextT = top? vmax : LEVELS[L.lv].lo*p.fx;
+  vmax=Math.max(vmax, nextT*1.25); vmin=Math.min(vmin*0.8, L.lo*p.fx>floor? L.lo*p.fx*0.9 : vmin*0.8);
+  const y0=Math.log10(vmin), y1=Math.log10(vmax);
+  const X=m=>ml+(m/M)*(W-ml-mr), Y=v=>mt+(1-(Math.log10(cl(v))-y0)/(y1-y0))*(H-mt-mb);
+  let s="";
+  // gridlines 1,3 x 10^k
+  for(let k=Math.floor(y0);k<=Math.ceil(y1);k++){ [1,3].forEach(f=>{const v=f*10**k; if(v<vmin||v>vmax) return; const y=Y(v);
+    s+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--line-2)" stroke-width="1"/><text x="${ml-6}" y="${y+4}" text-anchor="end">${fmt(v,p).replace("NT$","")}</text>`;});}
+  // level thresholds
+  LEVELS.forEach(R=>{const v=R.lo*p.fx; if(R.lo===0||v<vmin||v>vmax) return; const y=Y(v);
+    s+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--ink-3)" stroke-dasharray="4 4" stroke-width="1"/><text x="${W-mr-4}" y="${y-5}" text-anchor="end" style="fill:var(--ink-2);font-weight:600">Level ${R.lv}</text>`;});
+  // x axis
+  const step = years>30?10: years>15?5:2;
+  for(let yv=0; yv<=years; yv+=step){ const x=X(yv*12); s+=`<text x="${x}" y="${H-22}" text-anchor="middle">${now.getFullYear()+yv}</text><text x="${x}" y="${H-7}" text-anchor="middle">${Math.round(p.age+yv)} 歲</text><line x1="${x}" x2="${x}" y1="${H-mb}" y2="${H-mb+4}" stroke="var(--line)"/>`; }
+  s+=`<line x1="${ml}" x2="${W-mr}" y1="${H-mb}" y2="${H-mb}" stroke="var(--line)"/>`;
+  // band
+  let band="M"; for(let m=0;m<=M;m++) band+=`${X(m).toFixed(1)},${Y(Hi[m]).toFixed(1)} L`;
+  for(let m=M;m>=0;m--) band+=`${X(m).toFixed(1)},${Y(Lo[m]).toFixed(1)} ${m?"L":"Z"}`;
+  s+=`<path d="${band}" fill="var(--band)" fill-opacity="var(--band-op)" style="fill-opacity:var(--band-op)"/>`;
+  let line=""; for(let m=0;m<=M;m++) line+=(m?"L":"M")+X(m).toFixed(1)+","+Y(B[m]).toFixed(1);
+  s+=`<path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+  if(mB!==null && mB<=M){ s+=`<circle cx="${X(mB)}" cy="${Y(B[mB])}" r="5" fill="var(--accent)" stroke="var(--panel)" stroke-width="2"/>`;
+    s+=`<text x="${X(mB)-8}" y="${Y(B[mB])-10}" text-anchor="end" style="fill:var(--ink);font-weight:600">${when(mB)}・${Math.floor(p.age+mB/12)} 歲</text>`; }
+  s+=`<line id="xh" x1="0" x2="0" y1="${mt}" y2="${H-mb}" stroke="var(--ink-3)" stroke-width="1" visibility="hidden"/><circle id="xd" r="4" fill="var(--accent)" stroke="var(--panel)" stroke-width="2" visibility="hidden"/>`;
+  s+=`<rect id="hit" x="${ml}" y="${mt}" width="${W-ml-mr}" height="${H-mt-mb}" fill="transparent" tabindex="0" aria-label="移動以查看各年份數值"/>`;
+  svg.innerHTML=s;
+  const tip=$("tip"), hit=svg.querySelector("#hit"), xh=svg.querySelector("#xh"), xd=svg.querySelector("#xd");
+  const show=m=>{ m=Math.max(0,Math.min(M,m)); const x=X(m);
+    xh.setAttribute("x1",x); xh.setAttribute("x2",x); xh.setAttribute("visibility","visible");
+    xd.setAttribute("cx",x); xd.setAttribute("cy",Y(B[m])); xd.setAttribute("visibility","visible");
+    tip.hidden=false; tip.textContent="";
+    const rows=[[when(m)+"・"+Math.floor(p.age+m/12)+" 歲",""],["基準",fmt(B[m],p)],["樂觀",fmt(Hi[m],p)],["悲觀",fmt(Lo[m],p)]];
+    rows.forEach(([a,b],i)=>{const d=document.createElement("div"); if(i===0){d.innerHTML="<b></b>"; d.firstChild.textContent=a;} else d.textContent=a+"  "+b; tip.appendChild(d);});
+    const tw=tip.offsetWidth; tip.style.left=Math.min(Math.max(x+12,0), W-tw-4)+"px"; tip.style.top=(mt+6)+"px"; };
+  let cm=0;
+  hit.addEventListener("pointermove",e=>{const r=svg.getBoundingClientRect(); const x=(e.clientX-r.left)*(W/r.width); cm=Math.round((x-ml)/(W-ml-mr)*M/12)*12; show(cm);});
+  hit.addEventListener("pointerleave",()=>{tip.hidden=true; xh.setAttribute("visibility","hidden"); xd.setAttribute("visibility","hidden");});
+  hit.addEventListener("focus",()=>show(cm));
+  hit.addEventListener("blur",()=>{tip.hidden=true; xh.setAttribute("visibility","hidden"); xd.setAttribute("visibility","hidden");});
+  hit.addEventListener("keydown",e=>{ if(e.key==="ArrowRight"){cm=Math.min(M,cm+12);show(cm);e.preventDefault();} if(e.key==="ArrowLeft"){cm=Math.max(0,cm-12);show(cm);e.preventDefault();} });
+  // table
+  let t="<tr><th>時間</th><th>年齡</th><th>悲觀</th><th>基準</th><th>樂觀</th><th>階梯</th></tr>";
+  for(let yv=1; yv<=years; yv++){ const m=yv*12; t+=`<tr><td>第 ${yv} 年（${when(m)}）</td><td>${Math.floor(p.age+yv)}</td><td>${fmt(Lo[m],p)}</td><td>${fmt(B[m],p)}</td><td>${fmt(Hi[m],p)}</td><td>L${levelOf(B[m]/p.fx).lv}</td></tr>`; }
+  $("tbl").innerHTML=t;
+}
+
+function drawLevers(p, mB, target, top){
+  const box=$("levers"); box.textContent="";
+  if(top){ box.textContent="你已經在最高一階。"; return; }
+  const extra=Math.round(p.inc*0.1/1000)*1000||1000;
+  const sideA=Math.round(p.inc*0.2/1000)*1000||1000;
+  const L=[
+    {nm:"每月多存 "+fmt(extra,p), g:"每月多存一點", sm:"少花月薪的 10%", adj:{extraSave:extra}},
+    {nm:"報酬率 +1%", g:"投資報酬率 +1%", sm:"例如降低費用、提高股票比例", adj:{dr:0.01}},
+    {nm:"每年調薪多 1%", g:"每年調薪多 1%", sm:"升遷、跳槽、談薪", adj:{dRaise:0.01}},
+    {nm:"副業每月再多 +"+fmt(sideA,p), g:"多一份副業收入", sm:"在你填的副業之外，明年開始、全部投資", adj:{sideAdd:sideA}},
+    {nm:"多升遷一次", g:"多升遷一次", sm:"突破天花板，例如換公司", custom:{...p,promoMax:p.promoMax+1}},
+    {nm:"加薪不再拿去花", g:"加薪不再拿去花", sm:"花掉比例改成 0%", custom:{...p,creep:0}}
+  ];
+  const baseM = mB===null? MAXM : mB;
+  L.forEach(o=>{ const r= o.custom? sim(o.custom) : sim(p,o.adj); const m=firstHit(r.pts,target); o.save= baseM-(m===null?MAXM:m); });
+  L.sort((a,b)=>b.save-a.save);
+  SHARE_LEVERS=L.filter(o=>o.save>0).slice(0,2).map(o=>({g:o.g, y:mB===null? null : o.save/12}));
+  const mx=Math.max(...L.map(o=>o.save),1);
+  L.forEach((o,i)=>{
+    const d=document.createElement("div"); d.className="lever"+(i===0&&o.save>0?" top":"");
+    d.innerHTML=`<div class="nm"></div><div class="val"></div><div class="bar"><i></i></div>`;
+    d.querySelector(".nm").textContent=o.nm; const sm=document.createElement("small"); sm.textContent=o.sm; d.querySelector(".nm").appendChild(sm);
+    d.querySelector(".val").textContent= o.save<=0? "沒影響" : (mB===null? "可抵達" : "快 "+yrs(o.save)+" 年");
+    d.querySelector(".bar i").style.width=(Math.max(o.save,0)/mx*100).toFixed(1)+"%";
+    box.appendChild(d);
+  });
+}
+
+// 分享圖用：依財富階段給 3 句預設建議（不含任何個人數字），再插入 1 句個人化建議
+const SHARE_ADVICE={
+  1:["先存出 1 個月生活費的緩衝","先還清高利率的卡債","把力氣放在提高收入，比投資有用"],
+  2:["把緊急預備金存到 3–6 個月","薪水一入帳就自動定期定額","投資自己的職涯，加薪效果最大"],
+  3:["每次加薪，就自動加碼定期定額","把單一個股降到兩成以下","建立第二條收入線，先求驗證"],
+  4:["保住比多賺更重要，避開大錯","做好資產配置，每年再平衡","開始做稅務和傳承規劃"],
+  5:["把時間花在最高價值的事上","分散事業風險，別綁在同一間公司","決定多少才夠，把多的用在在乎的人"],
+  6:["思考傳承與影響力","建立能撐過下一代的治理機制","把財富換成時間、健康和陪伴"]};
+// 分享圖用的建議標題：拿掉所有數字，避免透露真實狀況
+const TIP_LABEL=t=> /^儲蓄率/.test(t)? "把儲蓄率再拉高一點" : /很快就到/.test(t)? "想好到了下一階之後，要換什麼自由" : /最高一階/.test(t)? "把財富換成時間、健康和在乎的人" : t.replace(/[0-9０-９.,%NT$萬]+/g,"").trim();
+function drawTriangle(p, mB, L, next, top, usd0, nw0){
+  const age=p.age, life=Math.max(p.life, age+0.5), healthyAge=Math.max(life-p.sick, age);
+  const remain=life-age, healthyLeft=Math.max(healthyAge-age,0);
+  const lvlAge = (top||mB===null)? null : age+mB/12;
+  // timeline
+  const tl=$("tl"); tl.textContent="";
+  const pct=v=>Math.min(Math.max(v/life*100,0),100);
+  const seg=(c,w)=>{const d=document.createElement("div"); d.className="seg "+c; d.style.width=w+"%"; tl.appendChild(d);};
+  seg("lived",pct(age)); seg("healthy",pct(healthyAge)-pct(age)); seg("frail",100-pct(healthyAge));
+  const mk=(v,txt,cls)=>{const d=document.createElement("div"); d.className="mk "+cls; d.style.left="calc("+pct(v)+"% - 1px)"; const sp=document.createElement("span"); sp.textContent=txt; d.appendChild(sp); tl.appendChild(d);};
+  mk(age,"現在 "+Math.round(age)+" 歲","up");
+  mk(healthyAge,"健康到 "+healthyAge.toFixed(0)+" 歲", pct(healthyAge)-pct(age)<22?"dn":"up");
+  if(lvlAge!==null && lvlAge<life) mk(lvlAge,"Level "+next.lv+"・"+lvlAge.toFixed(0)+" 歲","dn lvl");
+  const st=document.createElement("span"); st.className="start"; st.textContent="0"; tl.appendChild(st);
+  const en=document.createElement("span"); en.className="end"; en.textContent="平均壽命 "+life.toFixed(1)+" 歲"; tl.appendChild(en);
+
+  // short corner
+  // 短板：健康年數少 → 健康；財富還在低階 → 財富；其他 → 時間
+  const healthyLeft0=Math.max(Math.max(life-p.sick, age)-age,0);
+  const short = (p.sick>=12 || healthyLeft0<15)? "h" : ((L.lv<=2 || (L.lv===3 && age<45))? "w" : "t");
+  const loB=Math.max(L.lo,1000), lp= L.hi===Infinity?1: Math.min(Math.max((Math.log10(Math.max(usd0,loB))-Math.log10(loB))/(Math.log10(L.hi)-Math.log10(loB)),0),1);
+  const summers=Math.max(Math.floor(remain),0);
+  const workYrs=Math.max(65-age,0);
+  const corners=[
+    {k:"w",t:"財富",b:"Level "+L.lv,s:`${L.name}・本階進度 ${(lp*100).toFixed(0)}%`,m:lp},
+    {k:"t",t:"時間",b:remain.toFixed(0)+" 年",s:`大約還有 ${summers} 個夏天${workYrs>0?`，其中約 ${workYrs.toFixed(0)} 年在工作`:""}`,m:remain/life},
+    {k:"h",t:"健康",b:healthyLeft.toFixed(0)+" 年",s:`預估還能自由行動的年數（到 ${healthyAge.toFixed(0)} 歲）`,m:healthyAge>0?healthyLeft/healthyAge:0}
+  ];
+  const box=$("tri3"); box.textContent="";
+  corners.forEach(c=>{const d=document.createElement("div"); d.className="corner"+(c.k===short?" short":"");
+    d.innerHTML=`<div class="k"><span></span>${c.k===short?"<em>目前的短板</em>":""}</div><b></b><span></span><div class="meter"><i></i></div>`;
+    d.querySelector(".k span").textContent=c.t; d.querySelector("b").textContent=c.b; d.querySelector(":scope > span").textContent=c.s;
+    d.querySelector(".meter i").style.width=(Math.min(Math.max(c.m,0),1)*100).toFixed(0)+"%"; box.appendChild(d);});
+
+  // verdict
+  const v=$("verdict"); v.className="verdict";
+  if(top){ v.textContent="你已經在最高一階，接下來的重點是把財富轉換成時間、健康，以及你在乎的人。"; }
+  else if(lvlAge===null || lvlAge>healthyAge){ v.className="verdict bad";
+    v.textContent= lvlAge===null ? `照目前的速度，你在預估的健康年齡（${healthyAge.toFixed(0)} 歲）之前到不了 Level ${next.lv}。只靠存錢等到「${next.name}」並不划算，有些體驗要排在現在。`
+      : `照目前的速度，你 ${lvlAge.toFixed(0)} 歲才到 Level ${next.lv}，比預估的健康年齡（${healthyAge.toFixed(0)} 歲）還晚。到時候有了「${next.name}」，身體可能已經跟不上。`; }
+  else if(healthyAge-lvlAge<10){ v.className="verdict bad";
+    v.textContent=`你預計 ${lvlAge.toFixed(0)} 歲到 Level ${next.lv}，那之後只剩大約 ${(healthyAge-lvlAge).toFixed(0)} 年的健康時間可以享受「${next.name}」。可以考慮提早拉一些槓桿，或者別把所有體驗都留到那時候。`; }
+  else { v.textContent=`你預計 ${lvlAge.toFixed(0)} 歲到 Level ${next.lv}，那時還有大約 ${(healthyAge-lvlAge).toFixed(0)} 年的健康時間可以享受「${next.name}」。節奏很健康，重點是持續下去。`; }
+
+  // 依你的數字挑建議：每條都有觸發條件，和短板同一角的排前面，最多 4 條
+  const r001v=Math.max(p.cash+p.etf+p.stock*(p.stress?0.6:1)-p.debt,0)*0.0001, r001=fmt(r001v,p);
+  const sr=p.inc>0?(p.inc-p.exp)/p.inc:0;
+  // 下一階很近（3 年內）時，改看再下一階，槓桿的差別才看得出來
+  const far=(!top && mB!==null && mB<36 && next.lv<6)? LEVELS[next.lv] : next, target=far.lo*p.fx;
+  const mFar= top? null : firstHit(sim(p).pts,target);
+  const faster=adj=>{ if(top) return null; const m=firstHit(sim({...p,...adj}).pts,target); if(m===null) return null; if(mFar===null) return Infinity; return (mFar-m)/12; };
+  const fy=v=> v===Infinity? `就從到不了 Level ${far.lv} 變成到得了` : `就能快 ${v.toFixed(1)} 年到 Level ${far.lv}`;
+  const tips=[]; const add=(corner,pri,html)=>{ const lab=(html.match(/<b>([^<]+)<\/b>/)||[])[1]||""; tips.push({pri: pri+(corner===short||corner==="*"?0:3), html, lab: TIP_LABEL(lab)}); };
+  const healthyN=Math.max(Math.floor(healthyLeft),0);
+  if(top) add("*",0,"<b>你已經在最高一階</b>：接下來的重點是把財富轉成時間、健康，以及你在乎的人。");
+  if(!top && (lvlAge===null || healthyAge-lvlAge<10)) add("*",0,`<b>先拉最大的那根槓桿</b>（見下方「你最大的槓桿」）：照現在的速度，到 Level ${next.lv} 時${lvlAge===null?"已經超過健康年齡":`只剩約 ${Math.max(healthyAge-lvlAge,0).toFixed(0)} 年健康時間`}，要讓財富和健康在時間軸上多重疊一點。`);
+  if(!top && p.inc>0 && sr<0.3){ const extra=Math.round(p.inc*0.1/1000)*1000, f=faster({exp:Math.max(p.exp-extra,0)});
+    if(f && f>0.2) add("w",1,`<b>儲蓄率 ${(sr*100).toFixed(0)}%，先拉到 ${((sr+0.1)*100).toFixed(0)}%</b>：每月少花 ${fmt(extra,p)}，${fy(f)}。`); }
+  if(nw0>0 && p.stock/nw0>0.3){ const loss=p.stock*0.4, back=firstHit(sim({...p,stock:p.stock*0.6}).pts,target);
+    const lag= (back!==null && mFar!==null && back>mFar)? `，等於晚 ${((back-mFar)/12).toFixed(1)} 年到 Level ${far.lv}` : "";
+    add("w",2,`<b>先分散單一個股</b>：它佔了 ${(p.stock/nw0*100).toFixed(0)}%。如果跌 40%，會少 ${fmt(loss,p)}${lag}。`); }
+  if(!top && p.side<=0 && age<55 && p.inc>0){ const amt=Math.max(Math.round(p.inc*0.2/1000)*1000,1000), f=faster({side:amt,sideYear:0});
+    if(f && f>0.2) add("w",3,`<b>試一個副業小實驗</b>：如果每月多賺 ${fmt(amt,p)}，${fy(f)}。先花 4 週驗證有沒有人願意付錢，不用一開始就投入很多。`); }
+  if(p.sick>=10) add("h",1,`<b>健康是你最划算的槓桿</b>：你預估有 ${p.sick.toFixed(0)} 年不健康。每週運動 3 次、每年健檢，每少 1 年不健康，就多 1 年能享受「${next.name}」。`);
+  else if(short==="h") add("h",1,`<b>把健康當投資部位來顧</b>：你大約還有 ${healthyN} 年能自由行動，運動和睡眠的報酬率，現在比任何投資都高。`);
+  if(short==="w" && age<45) add("w",4,"<b>用時間換錢，但守住健康底線</b>：時間和精力優先投入技能和收入；健康靠走路、睡眠這些免費的方式維持就好。");
+  if(short!=="w" && r001v>=100) add("t",1,`<b>開始用錢換時間</b>：低於 ${r001} 的花費（0.01% 法則）只要能省時間就別猶豫，例如外包家務、搭計程車。`);
+  if(age>=28 && age<65){ const late=lvlAge===null||lvlAge>healthyAge-10;
+    add("t",2,`<b>把有保存期限的體驗排進行程</b>：你大約還有 ${healthyN} 個健康的夏天。長途健行、潛水、陪父母旅行，每年至少排一個${late?`，別等到 Level ${next.lv} 才做`:""}。`); }
+  if(age<30) add("w",2,"<b>現在最便宜的投資是自己</b>：學技能、換跑道、試副業，失敗的代價這輩子最低。");
+  if(age>=55) add("t",1,"<b>資產配置轉向穩健</b>：保住比多賺重要，一次大跌就可能讓計畫延後好幾年。");
+  if(age>=70) add("t",2,"<b>處理傳承</b>：贈與、信託、遺囑，趁還能清楚做決定的時候安排好。");
+  if(!top && mB!==null && mB<36) add("*",3,`<b>你很快就到 Level ${next.lv}</b>：先想好到了之後要把多出來的自由換成什麼，不然只是換了一個數字。`);
+  const sorted=tips.sort((x,y)=>x.pri-y.pri).slice(0,4), items=sorted.map(t=>t.html);
+  { const base=SHARE_ADVICE[L.lv]||SHARE_ADVICE[3], topic=t=>/個股/.test(t)?"stock":/副業|收入線/.test(t)?"side":/儲蓄|存/.test(t)?"save":/健康/.test(t)?"health":/體驗|夏天/.test(t)?"exp":/傳承/.test(t)?"legacy":t,
+      used=new Set(base.map(topic)), mine=sorted.map(t=>t.lab).filter(Boolean).find(t=>!used.has(topic(t)) && !/最大的那根槓桿/.test(t));
+    SHARE_TIPS=[...new Set([base[0], mine, base[1], base[2]].filter(Boolean))].slice(0,3); }
+  $("triTitle").textContent=`${Math.round(age)} 歲、Level ${L.lv}：現在最該做的事`;
+  $("triTodo").innerHTML=items.map(x=>`<li>${x}</li>`).join("");
+}
+
+let raf=0; const schedule=()=>{cancelAnimationFrame(raf); raf=requestAnimationFrame(render);};
+$("sex").addEventListener("change",()=>{$("life").value=$("sex").value;});
+let toastT=0;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{t.hidden=true;},2800); }
+
+/* ---- 分享結果圖：畫成 1080×1350 圖片，先預覽，再分享或儲存 ---- */
+const SHOT={dl:null};
+(async()=>{ try{ if(window.claude&&window.claude.use) SHOT.dl=await window.claude.use("downloads"); }catch(e){} })();
+function wrapText(ctx,text,maxW){ const out=[]; let line="";
+  for(const ch of String(text)){ if(ch==="\n"){ out.push(line); line=""; continue; } const t=line+ch; if(ctx.measureText(t).width>maxW && line){ out.push(line); line=ch.trim()?ch:""; } else line=t; }
+  if(line) out.push(line); return out; }
+function rrect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function openShot(canvas,{filename,text,url}){
+  const old=document.getElementById("shotModal"); if(old) old.remove();
+  const m=document.createElement("div"); m.id="shotModal"; m.className="shot-modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-label","分享結果圖");
+  const box=document.createElement("div"); box.className="shot-box";
+  const img=document.createElement("img"); img.alt="我的結果圖"; img.src=canvas.toDataURL("image/png");
+  const row=document.createElement("div"); row.className="shot-row";
+  const note=document.createElement("p"); note.className="shot-note"; note.textContent="手機可以長按圖片儲存，電腦可以按右鍵另存。";
+  const mk=(t,cls)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=t; if(cls) b.className=cls; row.appendChild(b); return b; };
+  canvas.toBlob(blob=>{
+    const file=new File([blob],filename,{type:"image/png"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      mk("分享圖片","shot-main").addEventListener("click",async()=>{ try{ await navigator.share({files:[file],text:text+" "+url}); note.textContent="謝謝分享！"; }catch(e){ if(!(e&&e.name==="AbortError")) note.textContent="這裡沒辦法直接分享圖片，請長按圖片儲存後再分享。"; } });
+    }
+    if(SHOT.dl){ mk("儲存圖片").addEventListener("click",async()=>{ try{ await SHOT.dl.save({filename,data:blob}); note.textContent="已儲存！"; }catch(e){ note.textContent="沒有儲存。也可以長按或右鍵另存圖片。"; } }); } else { const a=document.createElement("a"); a.textContent="下載圖片"; a.className="shot-dl"; a.href=URL.createObjectURL(blob); a.download=filename; row.appendChild(a); }
+    mk("複製連結").addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(text+" "+url); note.textContent="連結已複製，貼在圖片下面一起分享吧！"; }catch(e){ note.textContent="連結："+url; } });
+    mk("關閉","shot-x").addEventListener("click",()=>m.remove());
+  },"image/png");
+  m.addEventListener("click",e=>{ if(e.target===m) m.remove(); });
+  document.addEventListener("keydown",function esc(e){ if(e.key==="Escape"){ m.remove(); document.removeEventListener("keydown",esc); } });
+  box.append(img,row,note); m.appendChild(box); document.body.appendChild(m);
+}
+
+const RES_MSG="我用財富階梯計算機算了一下，看看你還要幾年到下一階 👉";
+async function makeResultCard(){
+  try{ await Promise.all(["900 64px 'Noto Serif TC'","700 30px 'Noto Sans TC'","400 30px 'Noto Sans TC'"].map(f=>document.fonts.load(f))); }catch(e){}
+  const W=1080,H=1350,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+  const ink="#18201c", ink2="#56605a", ink3="#8a938d", acc="#2a78d6", soft="#e6f0fc", line="#dfe2dc";
+  x.fillStyle="#f4f5f1"; x.fillRect(0,0,W,H);
+  x.fillStyle="#fff"; rrect(x,48,48,W-96,H-96,36); x.fill();
+  const L=72+48, R=W-120, sans="'Noto Sans TC','PingFang TC',sans-serif", serif="'Noto Serif TC','Songti TC',serif";
+  x.textBaseline="alphabetic"; x.fillStyle=acc; x.font=`700 28px ${sans}`; x.fillText("財富階梯計算機",L,140);
+  const d=SHARE_D||{};
+  x.fillStyle=ink2; x.font=`500 36px ${sans}`; x.fillText(d.top? "我已經在財富階梯的最高一階" : "照現在的節奏，我還要",L,200);
+  x.fillStyle=ink; x.font=`900 150px ${serif}`;
+  const big= d.top? "🎉" : d.mB==null? "60+" : (d.mB/12).toFixed(1); x.fillText(big,L,350);
+  const bw=x.measureText(big).width; x.font=`900 64px ${serif}`; if(!d.top) x.fillText(d.mB==null? "年都到不了" : "年",L+bw+16,350);
+  x.fillStyle=ink2; x.font=`500 34px ${sans}`; if(!d.top) x.fillText(d.mB==null? "才能爬到下一階，得換個做法了" : "就能爬到財富階梯的下一階",L,405);
+  if(!d.top && d.mB!=null){ x.fillStyle=ink3; x.font=`400 28px ${sans}`; x.fillText(`樂觀 ${d.mH==null?"—":(d.mH/12).toFixed(1)} 年・悲觀 ${d.mL==null?"60+":(d.mL/12).toFixed(1)} 年（已扣通膨）`,L,448); }
+  // 曲線：不顯示金額，只顯示形狀、下一階門檻、幾年
+  const gx=L, gy=478, gw=R-L, gh=250; x.fillStyle="#f7f8f5"; rrect(x,gx,gy,gw,gh,24); x.fill();
+  const pts=d.pts||[], hitM=d.mB==null? 240 : d.mB, N=Math.min(Math.max(Math.ceil(hitM*1.35/12),5),40), nM=Math.min(N*12,pts.length-1);
+  if(nM>2){ const vals=pts.slice(0,nM+1).map(v=>Math.log10(Math.max(v,1))), tgt=Math.log10(Math.max(d.target||1,1));
+    let lo=Math.min(...vals,tgt), hi=Math.max(...vals,tgt); const pad=(hi-lo)*.12||.5; lo-=pad; hi+=pad;
+    const px=i=>gx+40+(gw-80)*i/nM, py=v=>gy+gh-50-(gh-90)*(v-lo)/(hi-lo);
+    x.setLineDash([10,10]); x.strokeStyle=ink3; x.lineWidth=2; x.beginPath(); x.moveTo(gx+40,py(tgt)); x.lineTo(gx+gw-40,py(tgt)); x.stroke(); x.setLineDash([]);
+    x.fillStyle=ink2; x.font=`700 26px ${sans}`; x.fillText("下一階",gx+gw-140,py(tgt)-14);
+    x.strokeStyle=acc; x.lineWidth=7; x.lineJoin="round"; x.beginPath(); vals.forEach((v,i)=>{ i? x.lineTo(px(i),py(v)) : x.moveTo(px(i),py(v)); }); x.stroke();
+    x.fillStyle=acc; x.beginPath(); x.arc(px(0),py(vals[0]),11,0,7); x.fill(); x.fillStyle=ink2; x.font=`500 24px ${sans}`; x.fillText("現在",px(0)-6,py(vals[0])+44);
+    if(d.mB!=null && d.mB<=nM){ x.fillStyle="#fff"; x.strokeStyle=acc; x.lineWidth=6; x.beginPath(); x.arc(px(d.mB),py(vals[d.mB]),14,0,7); x.fill(); x.stroke();
+      x.fillStyle=ink; x.font=`700 26px ${sans}`; x.fillText("到了！",px(d.mB)-36,py(vals[d.mB])-28); }
+    x.fillStyle=ink3; x.font=`400 22px ${sans}`; const step=N<=10?2:N<=20?5:10; for(let y=step;y<=N;y+=step){ if(y*12<=nM) x.fillText(`+${y} 年`,px(y*12)-30,gy+gh-14); } }
+  // 槓桿
+  let y=790; x.fillStyle=ink; x.font=`700 34px ${sans}`; x.fillText("我最大的槓桿",L,y); y+=20;
+  (SHARE_LEVERS.length? SHARE_LEVERS : [{g:"維持現在的節奏",y:null}]).forEach((o,i)=>{ y+=58; x.fillStyle=i?"#f7f8f5":soft; rrect(x,L,y-42,R-L,58,16); x.fill();
+    x.fillStyle=ink; x.font=`500 30px ${sans}`; x.fillText(o.g,L+22,y-4); if(o.y){ x.fillStyle=acc; x.font=`700 30px ${sans}`; const t=`快 ${o.y.toFixed(1)} 年`; x.fillText(t,R-22-x.measureText(t).width,y-4); } y+=10; });
+  // 建議
+  y+=54; x.fillStyle=ink; x.font=`700 34px ${sans}`; x.fillText("我現在最該做的事",L,y); x.font=`400 29px ${sans}`;
+  SHARE_TIPS.slice(0,3).forEach(t=>{ wrapText(x,t,R-L-40).slice(0,2).forEach((ln,j)=>{ if(y+44>H-200) return; y+=44; x.fillStyle=j?ink2:acc; if(!j) x.fillText("✦",L,y); x.fillStyle=ink2; x.fillText(ln,L+40,y); }); });
+  // 頁尾
+  x.fillStyle=line; x.fillRect(L,H-170,R-L,2); x.fillStyle=ink; x.font=`700 30px ${sans}`; x.fillText("你還要幾年？來算算看 →",L,H-112);
+  x.fillStyle=ink3; x.font=`400 24px ${sans}`; x.fillText("搜尋「財富階梯計算機」・不含任何金額",L,H-72);
+  return c;
+}
+async function shareResult(){ const c=await makeResultCard(); openShot(c,{filename:"我的財富階梯.png",text:RES_MSG,url:SHARE_URL}); }
+
+/* ---- 分享 + 匿名回饋：每個人只寫自己的那一筆（只存不透明的 id，不存名字），只有作者讀得到全部 ---- */
+const SHARE_URL="https://rcchieh.github.io/wealth-ladder/";
+// 回饋：所有人都能填的匿名 Google 表單；網頁只帶入「來源」和不含金額的匿名摘要
+const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSeSHMRJA2FxhyhOGMp6OqYmRweTcOnaQxnyK_2YDo0rqmRrKg/viewform", FE={src:"entry.1404172522", sum:"entry.610336213", job:"entry.267828983"};
+const yn=b=>b?"有":"沒有";
+function formLink(){
+  const S=SUM||{}, age=Math.round(parseFloat($("age").value)||0);
+  const sum=`年齡 ${age||"—"}・${sexLabel()}・L${S.level??"?"}・到下一階 ${S.yearsToNext==null?"60 年內到不了":S.yearsToNext+" 年"}・儲蓄率 ${S.saveRate||"—"}・自住房${yn(S.hasHome)}・副業${yn(S.hasSide)}・單一個股${S.stockHeavy?"超過":"未超過"}兩成・判斷用${S.basis||"—"}`;
+  return FORM_URL+"?usp=pp_url&"+FE.src+"="+encodeURIComponent("財富階梯計算機")+"&"+FE.sum+"="+encodeURIComponent(sum);
+}
+["fabFb","dkFb"].forEach(id=>{ const a=$(id); const upd=()=>{ a.href=formLink(); }; a.addEventListener("mousedown",upd); a.addEventListener("touchstart",upd,{passive:true}); a.addEventListener("focus",upd); a.addEventListener("click",upd); });
+function queueUsage(){}
+const sexLabel=()=>({"84.75":"女性","77.93":"男性"})[$("sex").value]||"未提供";
+// TA：25–44 歲、每週至少 1 小時、想找副業方向或把想法變成行動；工作有填才用來排除學生等
+const TA=d=>(d.age? d.age>=25&&d.age<45 : true) && !["學生"].includes(d.job) && !["","不到 1 小時"].includes(d.hours) && ["找到副業方向","把想法變成行動"].includes(d.goal);
+const SHARE_MSG="財富階梯計算機：算算你幾年到下一個財富階層，看看哪根槓桿能讓你最快到 👉";
+const enc=encodeURIComponent;
+$("shTh").href="https://www.threads.net/intent/post?text="+enc(SHARE_MSG+" "+SHARE_URL);
+$("shLn").href="https://line.me/R/share?text="+enc(SHARE_MSG+"\n"+SHARE_URL);
+$("shUrl").value=SHARE_URL;
+async function copyLink(){
+  try{ await navigator.clipboard.writeText(SHARE_URL); return true; }
+  catch(e){ const i=$("shUrl"); i.focus(); i.select(); try{ return document.execCommand("copy"); }catch(_){ return false; } }
+}
+const isPhone=()=> matchMedia("(max-width:880px) and (pointer:coarse)").matches;
+function toggleSheet(open){ const sh=$("shareSheet"); sh.hidden= open===undefined? !sh.hidden : !open; ["fabShare","dkShare"].forEach(id=>$(id).setAttribute("aria-expanded",String(!sh.hidden))); }
+$("shClose").addEventListener("click",()=>toggleSheet(false));
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("shareSheet").hidden) toggleSheet(false); });
+// 分享按鈕：區塊內、電腦右下角浮動、手機底部列，三個入口同一個動作
+const openShare=async()=>{
+  $("shareStatus").textContent="";
+  // 手機：直接叫出系統分享選單（裡面就有 Threads、LINE、IG）；叫不出來才改用下方按鈕
+  if(isPhone() && navigator.share){
+    try{ await navigator.share({title:"財富階梯計算機",text:SHARE_MSG,url:SHARE_URL}); $("shareStatus").textContent="謝謝分享！"; return; }
+    catch(e){ if(e && e.name==="AbortError") return; }
+    toggleSheet(true); return;
+  }
+  toggleSheet();
+};
+["fabShare","dkShare"].forEach(id=>$(id).addEventListener("click",openShare));
+["resShare","resShare2"].forEach(id=>$(id).addEventListener("click",()=>{ toggleSheet(false); shareResult(); }));
+$("shCp").addEventListener("click",async()=>{ $("shareStatus").textContent= await copyLink()? "連結已複製，貼給朋友吧！" : "請長按上面的連結手動複製。"; });
+$("shIg").addEventListener("click",async()=>{ const ok=await copyLink(); $("shareStatus").textContent= ok? "連結已複製。到 IG 限時動態加「連結」貼紙，或貼到私訊給朋友。" : "Instagram 不能直接帶入連結：請長按上面的連結複製，再到 IG 限時動態加「連結」貼紙或私訊。"; });
+["shTh","shLn"].forEach(id=>$(id).addEventListener("click",()=>{ $("shareStatus").textContent="謝謝分享！"; }));
+let touched=false;
+$("f").addEventListener("input",e=>{ if(e.target.id&&e.target.id.startsWith("sc")) return; touched=true; schedule(); queueCurrent(); });
+$("f").addEventListener("change",e=>{ if(e.target.id==="cur"||e.target.id==="sex"){ schedule(); queueCurrent(); } });
+
+/* ---- 我的試算：登入時存在帳號的私人空間，否則存在這台瀏覽器 ---- */
+const getState=()=>{const o={}; IDS.forEach(id=>o[id]=$(id).value); o.stress=$("stress").checked; return o;};
+const applyState=o=>{ if(!o) return; IDS.forEach(id=>{if(o[id]!=null)$(id).value=o[id]}); $("stress").checked=!!o.stress; prevCur=$("cur").value; setUnits(prevCur); };
+const LKEY="wealth-ladder-scenarios-v1";
+const store={kind:"local", col:null};
+let list=[], lastCurrent="", curTimer=0, delArmed=false;
+const localGet=()=>{try{return JSON.parse(localStorage.getItem(LKEY)||"{}")||{};}catch(e){return {};}};
+const localPut=o=>{try{localStorage.setItem(LKEY,JSON.stringify(o));return true;}catch(e){return false;}};
+function setStatus(msg){ const el=$("scStatus"); el.textContent="";
+  const b=document.createElement("b"); b.textContent="只有你看得到"; el.appendChild(b);
+  el.appendChild(document.createTextNode(msg || (store.kind==="db"? "・存在你的帳號，換裝置也找得到" : "・存在這台瀏覽器，換裝置或清除瀏覽資料就看不到"))); }
+async function refreshList(selectId){
+  if(store.kind==="db"){ const snap=await store.col.get(); list=snap.docs.filter(d=>d.id!=="current"&&d.id!=="ai"&&d.id!=="kit").map(d=>({id:d.id,...d.data()})); }
+  else { const o=localGet(); list=Object.keys(o).map(k=>({id:k,...o[k]})); }
+  list.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  const sel=$("scSel"), keep=selectId??sel.value; sel.textContent="";
+  const o0=document.createElement("option"); o0.value=""; o0.textContent= list.length? "選擇已儲存的試算（"+list.length+"）" : "還沒有儲存的試算"; sel.appendChild(o0);
+  list.forEach(x=>{const o=document.createElement("option"); o.value=x.id; o.textContent=x.name||"未命名"; sel.appendChild(o);});
+  sel.value= list.some(x=>x.id===keep)? keep : ""; syncButtons();
+}
+function syncButtons(){ const sel=$("scSel").value, cur=list.find(x=>x.id===sel), nm=$("scName").value.trim();
+  $("scDel").disabled=!sel; delArmed=false; $("scDel").textContent="刪除"; $("scDel").classList.remove("danger");
+  $("scSave").textContent= cur && nm===(cur.name||"") ? "更新" : "儲存"; }
+async function writeDoc(id,data){
+  if(store.kind==="db"){ try{ await store.col.doc(id).set(data); return true; }catch(e){ store.kind="local"; store.col=null; setStatus("・帳號無法儲存，改存在這台瀏覽器"); } }
+  if(id==="current") return true;
+  const o=localGet(); o[id]=data; return localPut(o);
+}
+async function removeDoc(id){
+  if(store.kind==="db"){ try{ await store.col.doc(id).delete(); return; }catch(e){ store.kind="local"; store.col=null; setStatus(); } }
+  const o=localGet(); delete o[id]; localPut(o);
+}
+$("scSel").addEventListener("change",()=>{ const x=list.find(v=>v.id===$("scSel").value); if(x){ applyState(x.values); $("scName").value=x.name||""; touched=true; render(); queueCurrent(); } syncButtons(); });
+$("scName").addEventListener("input",syncButtons);
+$("scSave").addEventListener("click",async()=>{
+  const nm=$("scName").value.trim()||("試算 "+new Date().toLocaleDateString("zh-TW"));
+  const sel=$("scSel").value, cur=list.find(x=>x.id===sel);
+  const id= cur && nm===(cur.name||"") ? cur.id : "s"+Date.now().toString(36);
+  $("scSave").disabled=true;
+  const ok=await writeDoc(id,{name:nm, values:getState(), updatedAt:Date.now()});
+  $("scSave").disabled=false; $("scName").value=nm;
+  await refreshList(id);
+  setStatus(ok? (store.kind==="db"? "・已存到你的帳號" : "・已存在這台瀏覽器") : "・這個瀏覽器無法儲存（可能是無痕模式）");
+});
+$("scDel").addEventListener("click",async()=>{
+  const sel=$("scSel").value; if(!sel) return;
+  if(!delArmed){ delArmed=true; $("scDel").textContent="確定刪除？"; $("scDel").classList.add("danger"); return; }
+  await removeDoc(sel); $("scName").value=""; await refreshList(""); setStatus("・已刪除");
+});
+function queueCurrent(){ clearTimeout(curTimer); curTimer=setTimeout(async()=>{ if(store.kind!=="db") return; const v=JSON.stringify(getState()); if(v===lastCurrent) return; lastCurrent=v; await writeDoc("current",{values:JSON.parse(v),updatedAt:Date.now()}); },1500); }
+(async()=>{
+  setStatus(); await refreshList();
+  try{
+    if(!window.claude||!window.claude.use) return;
+    const [db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
+    if(!db||!user) return;
+    const uid=await user.id(); if(!uid) return;
+    // 先問平台能不能寫入：只有檢視權限的人一開始就用訪客模式，不會填到一半才失敗
+    const canWrite=await user.can("data.write").catch(()=>null);
+    if(canWrite===false) return;
+    const col=db.collection("data/users/"+uid);
+    const cur=await col.doc("current").get();
+    store.kind="db"; store.col=col;
+    if(cur.exists){ const d=cur.data(); lastCurrent=JSON.stringify(d.values||{}); if(!touched && d.values){ applyState(d.values); render(); } }
+    // 第一次用帳號登入：把這台瀏覽器裡存的試算搬過去
+    const local=localGet(); const ids=Object.keys(local);
+    if(ids.length){ const snap=await col.get(); const have=new Set(snap.docs.map(d=>d.id));
+      for(const k of ids){ if(!have.has(k)) await col.doc(k).set(local[k]); }
+      localPut({}); }
+    await refreshList(); setStatus();
+  }catch(e){ store.kind="local"; store.col=null; setStatus(); }
+})();
+$("f").addEventListener("submit",e=>e.preventDefault());
+$("reset").addEventListener("click",()=>{IDS.forEach(id=>$(id).value=DEFAULTS[id]); $("stress").checked=false; prevCur=$("cur").value; setUnits(prevCur); render();});
+window.addEventListener("resize",schedule);
+// 名詞說明：卡片切換；點「怎麼算？」直接打開房子那張
+(()=>{ const tabs=[...document.querySelectorAll(".gtabs [role=tab]")];
+  const pick=(t,focus)=>{ tabs.forEach(b=>{ const on=b===t; b.setAttribute("aria-selected",String(on)); b.tabIndex=on?0:-1; $(b.getAttribute("aria-controls")).hidden=!on; }); if(focus) t.focus(); };
+  tabs.forEach((t,i)=>{ t.addEventListener("click",()=>pick(t)); t.addEventListener("keydown",e=>{ const d=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0; if(d){ e.preventDefault(); pick(tabs[(i+d+tabs.length)%tabs.length],true); } }); });
+  document.querySelectorAll('a[href="#houseHow"]').forEach(a=>a.addEventListener("click",e=>{ e.preventDefault(); pick($("gt-house")); $("gloss").scrollIntoView({behavior:"smooth",block:"start"}); }));
+})();
+
+// 手機：填資料時底部一直看得到結果；結果區出現在畫面上就收起來
+(()=>{ const dock=$("dock"), hero=document.querySelector(".hero"), inputs=$("f");
+  let heroIn=false, inputsIn=false; const upd=()=>{ dock.hidden= window.scrollY<240; $("dkGo").hidden=heroIn; };
+  window.addEventListener("scroll",upd,{passive:true});
+  if("IntersectionObserver" in window){
+    new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.target===hero) heroIn=e.isIntersecting; else inputsIn=e.isIntersecting; }); upd(); },{threshold:0.05}).observe(hero);
+    new IntersectionObserver(es=>{ es.forEach(e=>{ inputsIn=e.isIntersecting; }); upd(); },{threshold:0}).observe(inputs);
+  }
+  $("goStart").addEventListener("click",()=>inputs.scrollIntoView({behavior:"smooth",block:"start"}));
+  $("dkGo").addEventListener("click",()=>hero.scrollIntoView({behavior:"smooth",block:"start"}));
+})();
+render();
+})();
+</script>
+
+</body>
+</html>
