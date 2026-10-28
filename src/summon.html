@@ -1,0 +1,571 @@
+<title>小實驗召喚所</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* 單一暗色世界：夜空召喚陣。色票：夜墨 #12122b、星幕 #1d1d45、羊皮紙 #fbf1de、金 #f2c14e、玫瑰 #ff8fb1、薄荷 #7fe3cf */
+:root{
+  color-scheme:dark;
+  --ink:#12122b; --sky:#1d1d45; --sky-2:#272861; --line:#3a3b7a;
+  --paper:#fbf1de; --paper-ink:#3b2d4f; --text:#f3eefc; --text-2:#c3bde0; --text-3:#8f89b8;
+  --gold:#f2c14e; --rose:#ff8fb1; --mint:#7fe3cf; --sea:#8cb8ff;
+  --t:#8cb8ff; --s:#ff8fb1; --m:#c9a2ff; --b:#7fe3cf;
+  --disp:"Huninn","jf open 粉圓","PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--ink);color:var(--text);font:15px/1.65 var(--sans);padding-inline:16px;padding-block:20px 96px;
+  background-image:radial-gradient(1.5px 1.5px at 12% 18%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 78% 12%,#fff9 50%,transparent 51%),radial-gradient(1.5px 1.5px at 62% 42%,#fff6 50%,transparent 51%),radial-gradient(1px 1px at 30% 70%,#fff7 50%,transparent 51%),radial-gradient(1.2px 1.2px at 88% 78%,#fff8 50%,transparent 51%),radial-gradient(120% 70% at 50% -10%,#2b2c6e 0%,transparent 60%);
+  background-attachment:fixed}
+.wrap{max-width:520px;margin:0 auto;display:grid;gap:16px}
+h1,h2,h3{font-family:var(--disp);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.02em}
+button{font:700 15px var(--sans);cursor:pointer;border-radius:999px;border:0;min-height:44px;padding:10px 20px;color:var(--ink);background:var(--gold)}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+button:disabled{opacity:.55;cursor:default}
+.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+.link{background:none;color:var(--text-2);text-decoration:underline;min-height:auto;padding:6px;font-weight:500;font-size:13px}
+.panel{background:var(--sky);border:1px solid var(--line);border-radius:20px;padding:20px}
+.note{font-size:12.5px;color:var(--text-3)}
+[hidden]{display:none!important}
+
+/* ---------- 標題畫面 ---------- */
+.title{text-align:center;display:grid;gap:14px;padding-top:8px}
+.title .eyebrow{font-size:12px;letter-spacing:.3em;color:var(--gold)}
+.title h1{font-size:clamp(40px,11vw,56px);line-height:1.05;color:var(--paper);text-shadow:0 0 24px #f2c14e55}
+.title .lead{color:var(--text-2);max-width:30em;margin:0 auto}
+.title .lead b{color:var(--paper);font-weight:500}
+.fan{position:relative;height:190px;margin:6px auto 0;width:260px}
+.back{position:absolute;left:50%;top:10px;width:116px;height:166px;margin-left:-58px;border-radius:14px;background:
+  radial-gradient(circle at 50% 50%,transparent 26px,#f2c14e 27px,#f2c14e 29px,transparent 30px),
+  repeating-conic-gradient(from 0deg,#2f3080 0 15deg,#272861 15deg 30deg);border:3px solid var(--gold);box-shadow:0 10px 26px #0008;display:grid;place-items:center;font-size:30px}
+.back:nth-child(1){transform:rotate(-14deg) translateX(-58px)}
+.back:nth-child(3){transform:rotate(14deg) translateX(58px)}
+.back:nth-child(2){z-index:2;animation:hover 3.2s ease-in-out infinite}
+@keyframes hover{50%{transform:translateY(-8px)}}
+.perks{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.perks span{font-size:12.5px;color:var(--text-2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:#ffffff08}
+.gate{display:grid;gap:10px;justify-items:center}
+.gate .row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.start{font-size:17px;padding:12px 30px;box-shadow:0 0 0 0 #f2c14e88;animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 14px #f2c14e00}100%{box-shadow:0 0 0 0 #f2c14e00}}
+.login{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 20px;border-radius:999px;background:var(--paper);color:var(--paper-ink);font-weight:700;text-decoration:none}
+.status{font-size:13px;color:var(--text-2)}
+.status i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--text-3);vertical-align:middle}
+.status.on i{background:var(--mint);box-shadow:0 0 8px var(--mint)}
+
+/* ---------- 過場：召喚陣 ---------- */
+.portal{position:fixed;inset:0;z-index:50;background:#0b0b1fe6;display:grid;place-items:center;text-align:center}
+.circle{width:min(70vw,280px);aspect-ratio:1;border-radius:50%;border:2px solid var(--gold);position:relative;
+  background:radial-gradient(circle,#f2c14e22,transparent 62%),repeating-conic-gradient(#f2c14e33 0 4deg,transparent 4deg 30deg);animation:spin 2.4s linear infinite}
+.circle::before,.circle::after{content:"";position:absolute;inset:14%;border-radius:50%;border:1.5px dashed #f2c14eaa}
+.circle::after{inset:30%;border-style:solid;border-color:var(--rose)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.portal p{font-family:var(--disp);font-size:20px;color:var(--paper);margin:18px 0 0}
+
+/* ---------- 建立角色 ---------- */
+.q{display:grid;gap:8px;margin-top:14px}
+.q label,.q .lab{font-size:14px;color:var(--text)}
+.q .lab small{display:block;color:var(--text-3);font-size:12px}
+.q input[type=text]{font:16px var(--sans);color:var(--text);background:var(--sky-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:44px;width:100%}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.chips.six{grid-template-columns:repeat(6,minmax(0,1fr))}
+.chips button{background:var(--sky-2);color:var(--text-2);border:1px solid var(--line);font-weight:500;font-size:13px;padding:8px 4px;border-radius:12px;min-height:44px;line-height:1.25}
+.chips button[aria-pressed="true"]{background:var(--paper);color:var(--paper-ink);border-color:var(--paper);font-weight:700}
+.statq .lab b{font-family:var(--disp);font-weight:400;font-size:16px}
+
+/* ---------- 角色卡 ---------- */
+.hero{display:grid;gap:14px}
+.who{display:flex;gap:14px;align-items:center}
+.sigil{width:64px;height:64px;flex:none;border-radius:18px;background:conic-gradient(var(--t),var(--s),var(--m),var(--b),var(--t));display:grid;place-items:center;font-size:30px;box-shadow:0 0 18px #c9a2ff55}
+.sigil span{width:54px;height:54px;border-radius:14px;background:var(--sky);display:grid;place-items:center}
+.who h2{font-size:24px;color:var(--paper)}
+.who .ttl{font-size:13px;color:var(--gold)}
+.who .cls{font-family:var(--disp);font-size:15px;color:var(--mint)}
+.sigil span{font-size:34px}
+.xp{height:10px;border-radius:999px;background:var(--sky-2);overflow:hidden}
+.xp i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--rose));transition:width .6s ease}
+.xpmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums}
+.stats{display:grid;gap:10px}
+.stat{display:grid;grid-template-columns:62px minmax(0,1fr) 36px;gap:10px;align-items:center}
+.stat .nm{font-family:var(--disp);font-size:15px}
+.stat .bar{height:12px;border-radius:999px;background:var(--sky-2);overflow:hidden}
+.stat .bar i{display:block;height:100%;border-radius:999px;transition:width .6s ease}
+.stat .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--text-2);font-size:13px}
+.stat.weak .nm::after{content:" ▾";color:var(--rose);font-size:12px}
+.enh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#f2c14e14;border:1px dashed #f2c14e88;border-radius:14px;padding:10px 12px;font-size:13px;color:var(--text-2)}
+.enh b{font-family:var(--disp);font-weight:400;font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
+
+/* ---------- 魔法卡 ---------- */
+.card{position:relative;border-radius:18px;padding:16px;background:var(--paper);color:var(--paper-ink);display:flex;flex-direction:column;gap:8px;border:3px solid var(--rc,#d8c8a8);box-shadow:0 10px 24px #0007}
+.card .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card .em{width:48px;height:48px;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:26px}
+.card .rar{font:400 15px var(--disp);letter-spacing:.08em;padding:2px 10px;border-radius:999px;background:var(--rc);color:#fff}
+.card .tt{font:400 20px/1.3 var(--disp)}
+.card .pact{font-size:14px;line-height:1.6;background:#fff9;border-radius:12px;padding:8px 10px}
+.card .step{font-size:13px}
+.card .step b{color:#7a4fd0}
+.card .tag{font-size:12px;color:#7d6f93}
+.card.R{--rc:#8cb8ff}.card.SR{--rc:#ff8fb1}.card.SSR{--rc:#f2b630;box-shadow:0 0 0 2px #f2c14e66,0 0 28px #f2c14e99,0 10px 24px #0007}
+.card.SSR::before{content:"";position:absolute;inset:-3px;border-radius:18px;pointer-events:none;background:linear-gradient(115deg,transparent 30%,#fff8 45%,transparent 60%) -200% 0/300% 100% no-repeat;animation:shine 2.6s ease-in-out infinite}
+@keyframes shine{to{background-position:200% 0}}
+
+/* 召喚：翻牌 */
+.draw{display:grid;gap:12px}
+.slot{perspective:1000px}
+.flip{position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,1.3,.5,1);min-height:250px}
+.flip.open{transform:rotateY(180deg)}
+.flip .face{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip .face.front{transform:rotateY(180deg)}
+.flip .face.backside{position:absolute;inset:0;border-radius:18px;border:3px solid var(--gold);background:radial-gradient(circle at 50% 50%,transparent 34px,#f2c14e 35px,#f2c14e 37px,transparent 38px),repeating-conic-gradient(#2f3080 0 15deg,#272861 15deg 30deg);display:grid;place-items:center;cursor:pointer;color:var(--paper);font-family:var(--disp);font-size:15px}
+.flip .face.backside span{margin-top:120px;opacity:.85}
+.flip.glow-SSR .face.backside{box-shadow:0 0 30px #f2c14ecc}
+.flip.glow-SR .face.backside{box-shadow:0 0 24px #ff8fb1aa}
+.pick{align-self:flex-start;background:var(--paper-ink);color:var(--paper);min-height:40px;padding:8px 18px;font-size:14px}
+
+/* 打卡 */
+.stamps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.stamp{aspect-ratio:1;border-radius:50%;border:2px dashed #b9a6d6;display:grid;place-items:center;font-size:12px;color:#9a8cb4;background:#fff6}
+.stamp.on{border:0;background:radial-gradient(circle at 35% 30%,#fff7cf,#ffc94d 58%,#f0a000);color:#7a4a00;font-size:17px;box-shadow:0 3px 8px #f0a00055}
+.stamp.new{animation:pop .55s cubic-bezier(.2,1.7,.4,1)}
+@keyframes pop{from{transform:scale(.2) rotate(-40deg);opacity:0}}
+.checkin{background:linear-gradient(135deg,#ff8fb1,#c9a2ff);color:#fff}
+.equip-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.equip-row .cnt{font-size:13px;color:#6d5f86}
+.reflect{font-size:13.5px;background:#fff9;border-radius:12px;padding:10px 12px;line-height:1.7}
+
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec-h h3{font-size:20px;color:var(--paper)}
+.summon-btn{background:linear-gradient(135deg,var(--gold),#ffd98a);font-size:16px}
+.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.dex div{border-radius:14px;padding:10px;background:var(--sky-2);border:1px solid var(--line);font-size:12.5px;color:var(--text-2)}
+.dex div b{display:block;font-family:var(--disp);font-weight:400;font-size:15px;color:var(--paper)}
+.empty{font-size:13px;color:var(--text-3);border:1px dashed var(--line);border-radius:14px;padding:14px;text-align:center}
+
+/* 升級橫幅、提示 */
+.banner{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 18px);transform:translateX(-50%);z-index:60;background:var(--paper);color:var(--paper-ink);border-radius:999px;padding:10px 20px;font-family:var(--disp);font-size:17px;box-shadow:0 10px 30px #0009;animation:drop .5s cubic-bezier(.2,1.5,.4,1)}
+@keyframes drop{from{transform:translate(-50%,-30px);opacity:0}}
+.sparkle{position:fixed;pointer-events:none;z-index:70;font-size:18px;animation:fly 1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) scale(.4);opacity:0}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.fbfab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:10px 16px;border-radius:999px;background:var(--paper);color:var(--paper-ink);font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 10px 26px #0009}
+.locked{margin-top:14px;position:relative;border-radius:18px;padding:16px;border:2px dashed #f2c14e99;background:repeating-linear-gradient(135deg,#1d1d45 0 12px,#22235a 12px 24px);display:grid;gap:8px;overflow:hidden}
+.locked::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,#ffffff14 48%,transparent 60%) -200% 0/300% 100% no-repeat;animation:shine 3.4s ease-in-out infinite}
+.lk-top{display:flex;justify-content:space-between;align-items:center}
+.lk-ic{width:48px;height:48px;border-radius:14px;background:#ffffff12;display:grid;place-items:center;font-size:24px}
+.lk-rar{background:linear-gradient(90deg,#f2c14e,#ff8fb1,#c9a2ff);color:#12122b}
+.lk-t{font:400 20px var(--disp);color:var(--paper)}
+.locked p{margin:0;font-size:14px;color:var(--text-2)}
+.lk-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.lk-want{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;text-decoration:none;font-size:14px}
+.lk-share{background:transparent;color:var(--paper);border:1.5px solid var(--line);font-size:14px}
+.shot-modal{position:fixed;inset:0;z-index:80;background:#0b0b1fd9;display:grid;place-items:center;padding:16px}
+.shot-box{background:var(--sky);border:1px solid var(--line);border-radius:18px;padding:14px;width:min(420px,100%);max-height:100%;overflow:auto;display:grid;gap:10px}
+.shot-box img{width:100%;height:auto;border-radius:12px;display:block;max-height:62vh;object-fit:contain}
+.shot-row{display:flex;flex-wrap:wrap;gap:8px}
+.shot-row button{min-height:42px;padding:8px 16px;font-size:14px;background:var(--sky-2);color:var(--text);border:1px solid var(--line)}
+.shot-row .shot-main{background:var(--gold);color:var(--ink);border:0}
+.shot-row .shot-x{margin-left:auto;background:none;border:0;color:var(--text-2)}
+.shot-note{margin:0;font-size:12.5px;color:var(--text-3)}
+.calc-link{color:var(--gold)}
+.whint{margin:0;font-size:13px;color:var(--paper);background:#f2c14e14;border-radius:10px;padding:8px 10px;min-height:38px}
+.whint b{color:var(--gold);font-weight:700}
+.sum-hero{display:none;text-align:center}
+.sum-hero p{margin:18px 0 4px;font-family:var(--disp);font-size:18px;color:var(--paper)}
+#scSummon.big{background:radial-gradient(120% 90% at 50% 0%,#2f3080 0%,#1d1d45 70%);border:1.5px solid #f2c14e88;border-radius:22px;padding:18px;box-shadow:0 0 40px #f2c14e33}
+#scSummon.big .sum-hero{display:block}
+#scSummon.big .summon-btn{width:100%;min-height:64px;font-size:20px;box-shadow:0 0 0 0 #f2c14e88;animation:pulse 2.2s ease-out infinite}
+#scSummon.big #sumMsg{width:100%;text-align:center}
+.look{display:flex;gap:16px;align-items:center;margin-top:16px;padding:14px;border-radius:16px;background:#ffffff0a;border:1px dashed var(--line)}
+.look-av{width:88px;height:88px;flex:none;border-radius:50%;padding:0;background:conic-gradient(var(--t),var(--s),var(--m),var(--b),var(--t));display:grid;place-items:center;box-shadow:0 0 22px #c9a2ff66}
+.look-av span{width:76px;height:76px;border-radius:50%;background:var(--sky);display:grid;place-items:center;font-size:44px}
+.look-av.spin span{animation:roll .45s ease-out}
+@keyframes roll{from{transform:rotate(-200deg) scale(.4);opacity:.2}}
+.look-el{font-family:var(--disp);font-size:18px;color:var(--mint)}
+.rare-tag{display:inline-block;margin-top:4px;font-size:12px;font-weight:700;color:#12122b;background:linear-gradient(90deg,#f2c14e,#ff8fb1,#c9a2ff);border-radius:999px;padding:2px 10px}
+footer{text-align:center;font-size:12px;color:var(--text-3)}
+footer a{color:var(--text-2)}
+</style>
+
+<div class="wrap">
+
+  <!-- 標題畫面：史詩意義 + 不可預測性 + 稀缺（每日 1 次） -->
+  <section class="title" id="scTitle">
+    <div class="eyebrow">TINY EXPERIMENTS · 每日召喚</div>
+    <h1>小實驗召喚所</h1>
+    <p class="lead">財富只是<b>強化器</b>。真正讓人生變強的，是你的<b>時間、社交、心智、身體</b>。每天召喚一張小實驗卡，7 天練成一招，把自己練成大法師。</p>
+    <div class="fan" aria-hidden="true"><div class="back"></div><div class="back">✦</div><div class="back"></div></div>
+    <div class="perks"><span>🎴 每天召喚 1 次</span><span>⭐ 7 天練成一招</span><span>📖 收集 12 招圖鑑</span><span>🔒 AI 量身卡・即將解鎖</span></div>
+    <div class="gate">
+      <div class="row"><button type="button" class="start" id="goStart">⚔ 開始冒險</button></div>
+      <p class="note">不用登入，約 1 分鐘建立角色。進度只存在這台裝置。</p>
+    </div>
+  </section>
+
+  <!-- 建立角色：擁有感 + 賦能 -->
+  <section class="panel" id="scCreate" hidden>
+    <h2 style="font-size:24px;color:var(--paper)">建立你的角色</h2>
+    <p class="note">誠實作答就好，能力值會隨著你練成的小實驗慢慢長大。</p>
+    <div class="look">
+      <div class="look-av" id="lookAv"><span id="lookEmo">🧙‍♀️</span></div>
+      <div><div class="look-el" id="lookEl">極光系</div><span class="rare-tag" id="lookRare" hidden>✨ 稀有造型</span><p class="note" style="margin:4px 0 0">命運替你抽的造型，每個角色都獨一無二、不能重抽。分享出去，看看朋友抽到什麼！</p></div>
+    </div>
+    <div class="q"><label for="nm">冒險者名字</label><input id="nm" type="text" maxlength="12" placeholder="例如：晨光法師"></div>
+    <div class="q"><div class="lab">財富階梯在第幾階？<small>用淨資產（資產減負債）來看。財富是強化器，會放大其他四項能力。</small></div>
+      <div class="chips six" id="qW"></div>
+      <p class="whint" id="wHint">點一階，看看它的資產範圍。</p>
+      <p class="note" style="margin:0">想知道確切在哪一階、還要幾年到下一階？用<a href="https://claude.ai/artifact/7gStPfA8QH7CEgJsU4vXH5" target="_blank" rel="noopener" class="calc-link">財富階梯計算機</a>算一下（約 3 分鐘），會有更完整的建議。</p></div>
+    <div class="q statq"><div class="lab"><b style="color:var(--t)">時間</b>　每週能自由安排的時間</div><div class="chips" id="qT"></div></div>
+    <div class="q statq"><div class="lab"><b style="color:var(--s)">社交</b>　上個月和讓你充電的人見面</div><div class="chips" id="qS"></div></div>
+    <div class="q statq"><div class="lab"><b style="color:var(--m)">心智</b>　每週學新東西、深度思考</div><div class="chips" id="qM"></div></div>
+    <div class="q statq"><div class="lab"><b style="color:var(--b)">身體</b>　每週運動、睡得好的天數</div><div class="chips" id="qB"></div></div>
+    <div class="q"><label for="goal">最近最想推進的一件事（選填）</label><input id="goal" type="text" maxlength="40" placeholder="例如：找到副業方向"></div>
+    <div style="margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" id="goCreate">✦ 完成角色</button><span class="note" id="createMsg"></span></div>
+  </section>
+
+  <!-- 角色卡：成就感 -->
+  <section class="panel hero" id="scHome" hidden>
+    <div class="who"><div class="sigil"><span id="hSig">🧙</span></div>
+      <div><h2 id="hName">冒險者</h2><div class="cls" id="hClass">極光系・星辰賢者</div><div class="ttl" id="hTitle">Lv 1・見習魔法學徒</div></div></div>
+    <p class="note" id="hClassDesc" style="margin:0"></p>
+    <div><div class="xp"><i id="hXp" style="width:0"></i></div><div class="xpmeta"><span id="hXpT">0 / 50 XP</span><span id="hNext">下一個稱號：初級魔法師</span></div></div>
+    <div class="stats" id="hStats"></div>
+    <div class="enh"><span>財富 <span id="hW">L3</span> 強化 <span id="hMul">×1.2</span>　→　總戰力</span><b id="hPow">0</b></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button type="button" id="shotBtn">📸 分享我的角色卡</button><button type="button" class="link" id="editChar">修改角色</button></div>
+  </section>
+
+  <!-- 裝備中的魔法卡：打卡（成就 + 避免損失：連續別斷） -->
+  <section id="scEquip" hidden>
+    <div class="sec-h"><h3>練習中的魔法</h3><span class="note" id="eqNote"></span></div>
+    <div id="eqCard" style="margin-top:10px"></div>
+  </section>
+
+  <!-- 召喚：不可預測性 + 稀缺 -->
+  <section id="scSummon" hidden>
+    <div class="sec-h"><h3>召喚台</h3><span class="note" id="sumNote"></span></div>
+    <div class="sum-hero" aria-hidden="true"><div class="fan"><div class="back"></div><div class="back">✦</div><div class="back"></div></div><p>今天的 3 張魔法卡，正在等你翻開</p></div>
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button type="button" class="summon-btn" id="goSummon">🔮 召喚 3 張</button>
+      <span class="note" id="sumMsg"></span>
+    </div>
+    <div class="draw" id="drawBox" style="margin-top:12px"></div>
+    <div class="locked" id="teaser">
+      <div class="lk-top"><span class="lk-ic" aria-hidden="true">🔒</span><span class="rar lk-rar">???</span></div>
+      <div class="lk-t">AI 量身卡・下一版解鎖</div>
+      <p>Claude 會讀你的四項能力和最想推進的事，為你一個人打造專屬魔法卡：連招式名字和第一步，都只屬於你。</p>
+      <div class="lk-row">
+        <a class="lk-want" id="wantAi" href="#" target="_blank" rel="noopener">✋ 我想搶先玩</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 圖鑑：擁有感 -->
+  <section id="scDex" hidden>
+    <div class="sec-h"><h3>魔法圖鑑</h3><span class="note" id="dexNote"></span></div>
+    <div class="dex" id="dex" style="margin-top:10px"></div>
+  </section>
+
+  <footer id="foot" hidden>卡片和打卡紀錄只存在這台裝置的瀏覽器，不用登入，作者看不到你的資料。<br><button type="button" class="link" id="resetAll">清除角色重新開始</button></footer>
+</div>
+
+<a class="fbfab" id="fbFab" href="https://docs.google.com/forms/d/e/1FAIpQLSeSHMRJA2FxhyhOGMp6OqYmRweTcOnaQxnyK_2YDo0rqmRrKg/viewform" target="_blank" rel="noopener">💬 告訴我怎麼更好</a>
+
+<div class="portal" id="portal" hidden><div><div class="circle"></div><p id="portalTxt">召喚陣啟動中…</p><button type="button" class="link" id="skipPortal">跳過</button></div></div>
+
+<script>
+(()=>{ const $=id=>document.getElementById(id);
+const KEY="tiny-summon-v1";
+const STATS=[{k:"t",nm:"時間",c:"var(--t)"},{k:"s",nm:"社交",c:"var(--s)"},{k:"m",nm:"心智",c:"var(--m)"},{k:"b",nm:"身體",c:"var(--b)"}];
+const OPTS={t:["< 3 小時","3–8 小時","8–15 小時","15 小時+"],s:["0 次","1–2 次","3–5 次","6 次+"],m:["幾乎沒有","1 小時","2–4 小時","5 小時+"],b:["0–1 天","2–3 天","4–5 天","6–7 天"]};
+const AVATARS=["🧙‍♀️","🧙‍♂️","🧝‍♀️","🧝‍♂️","🧚","🧚‍♂️","🦉","🦊","🐈‍⬛","🐇","🐼","🦁","🐧","🐢","🦋"];
+const RARE_AVATARS=["🐉","🦄","🧜‍♀️","🧜‍♂️","🐻‍❄️"];          // 稀有造型：約 1/8 的機率
+const rollAvatar=()=> Math.random()<0.125? pickOne(RARE_AVATARS) : pickOne(AVATARS);
+const isRare=a=>RARE_AVATARS.includes(a);
+const ELEMENTS=["晨光","星砂","月影","薄荷","琥珀","極光","微風","雲朵","珊瑚","雪花"];
+const CLASSES={t:["時之術士","靠專注升級的人：把時間花在刀口上"],s:["心靈詠唱者","靠連結升級的人：身邊的人就是魔力來源"],m:["星辰賢者","靠好奇心升級的人：每讀一頁都在變強"],b:["森林遊俠","靠身體升級的人：精力充沛，走得最遠"],x:["平衡魔導師","四項能力差不多：哪一招都能練"]};
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+const TITLES=[[1,"見習魔法學徒"],[3,"初級魔法師"],[6,"中級魔法師"],[10,"大魔法師"],[15,"超級大法師"]];
+const DECK={
+  t:[["⏳","時間結界術","我會每天關掉通知 25 分鐘，只做一件事，持續 7 天。","現在把手機設成勿擾 25 分鐘。"],
+     ["🧹","瑣事退散咒","我會每天挑一件 10 分鐘的瑣事，試著不做或外包，持續 7 天。","寫下今天最想丟掉的一件瑣事。"],
+     ["🌙","收工儀式","我會每天固定時間收工，寫下明天的第一件事，持續 7 天。","在行事曆設一個「收工」提醒。"]],
+  s:[["💌","感謝飛鴿","我會每天傳一則真心的感謝訊息給一個人，持續 7 天。","想一個人，現在就傳給他。"],
+     ["☕","咖啡結盟術","我會這週約 1 位想多認識的人喝咖啡，每天記下一個想問他的問題，持續 7 天。","列出 3 個想約的人。"],
+     ["🎤","分享小火花","我會每天在社群分享一個今天學到的小東西，持續 7 天。","寫下今天學到的一句話。"]],
+  m:[["📖","十頁魔導書","我會每天讀 10 頁書，持續 7 天。","把書放到枕頭旁邊。"],
+     ["🧠","一問深潛","我會每天花 15 分鐘查一個好奇的問題，寫 3 句筆記，持續 7 天。","寫下今天最好奇的一個問題。"],
+     ["🔮","副業試水溫","我會每天寫下一個朋友願意付錢解決的問題，持續 7 天。","打開備忘錄，寫下第 1 個問題。"]],
+  b:[["🚶","晨光步行術","我會每天早上走路 10 分鐘，持續 7 天。","把明早的鬧鐘提早 10 分鐘。"],
+     ["💧","水之護盾","我會每天喝滿 6 杯水，持續 7 天。","現在去裝一杯水。"],
+     ["😴","早睡回血咒","我會每天比平常早 20 分鐘上床，持續 7 天。","設一個睡前 30 分鐘的提醒。"]]
+};
+const load=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){ return null; } };
+const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(G)); }catch(e){} };
+let G=load(), sample=null, aiChecked=false;
+const today=()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const el=(t,c,x)=>{ const e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; };
+const clip=(v,n)=>String(v||"").replace(/\s+/g," ").trim().slice(0,n);
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
+
+/* ---------- 數值 ---------- */
+const statVal=k=> Math.min(100, (G.base[k]+1)*15 + Math.floor((G.xpBy[k]||0)/5));
+const totalXp=()=>Object.values(G.xpBy||{}).reduce((a,b)=>a+b,0);
+const level=()=>Math.floor(totalXp()/50)+1;
+const titleOf=lv=>{ let t=TITLES[0][1]; TITLES.forEach(([l,n])=>{ if(lv>=l) t=n; }); return t; };
+const nextTitle=lv=>{ const n=TITLES.find(([l])=>l>lv); return n? `Lv ${n[0]} 解鎖「${n[1]}」` : "已是最高稱號"; };
+const classOf=()=>{ const v=STATS.map(s=>[s.k,statVal(s.k)]).sort((a,b)=>b[1]-a[1]); return v[0][1]-v[3][1]<=10? CLASSES.x : CLASSES[v[0][0]]; };
+const mul=()=>1+0.1*((G.w||1)-1);
+const weakOrder=()=>STATS.map(s=>s.k).sort((a,b)=>statVal(a)-statVal(b));
+
+/* ---------- 小動畫 ---------- */
+function banner(txt){ const b=el("div","banner",txt); document.body.appendChild(b); setTimeout(()=>b.remove(),2400); }
+function sparkle(from){ if(reduce) return; const r=from.getBoundingClientRect();
+  for(let i=0;i<10;i++){ const s=el("span","sparkle",["✦","✧","★"][i%3]); s.style.left=(r.left+r.width/2)+"px"; s.style.top=(r.top+r.height/2)+"px";
+    s.style.color=["#f2c14e","#ff8fb1","#7fe3cf","#c9a2ff"][i%4]; s.style.setProperty("--dx",(Math.cos(i/10*6.28)*70)+"px"); s.style.setProperty("--dy",(Math.sin(i/10*6.28)*70)+"px");
+    document.body.appendChild(s); setTimeout(()=>s.remove(),1000); } }
+
+/* ---------- 標題畫面與登入狀態 ---------- */
+function show(ids){ ["scTitle","scCreate","scHome","scEquip","scSummon","scDex","foot"].forEach(id=>$(id).hidden=!ids.includes(id)); }
+function gate(){ $("goStart").textContent=G?"⚔ 繼續冒險":"⚔ 開始冒險"; }
+async function portal(txt){ $("portalTxt").textContent=txt; $("portal").hidden=false; let skip=false; const sk=()=>{skip=true;}; $("skipPortal").onclick=sk;
+  for(let i=0;i<14 && !skip;i++) await wait(100); $("portal").hidden=true; }
+$("goStart").addEventListener("click",async()=>{ await portal(G? "回到召喚所…" : "召喚陣啟動中…"); G? home() : create(); });
+
+/* ---------- 建立角色 ---------- */
+const pick={w:null,t:null,s:null,m:null,b:null};
+function chips(box,labels,key){ const b=$(box); b.textContent=""; labels.forEach((l,i)=>{ const x=el("button",null,l); x.type="button"; x.setAttribute("aria-pressed",String(pick[key]===i)); x.addEventListener("click",()=>{ pick[key]=i; [...b.children].forEach((c,j)=>c.setAttribute("aria-pressed",String(j===i))); }); b.appendChild(x); }); }
+let look={avatar:null,element:null};
+function showLook(spin){ $("lookEmo").textContent=look.avatar; $("lookEl").textContent=look.element+"系"; $("lookRare").hidden=!isRare(look.avatar); if(spin){ const b=$("lookAv"); b.classList.remove("spin"); void b.offsetWidth; b.classList.add("spin"); } }
+function create(){
+  look= G&&G.avatar? {avatar:G.avatar,element:G.element} : {avatar:rollAvatar(),element:pickOne(ELEMENTS)}; showLook(!G);
+  if(G){ pick.w=G.w-1; Object.assign(pick,G.base); $("nm").value=G.name; $("goal").value=G.goal||""; }
+  chips("qW",["L1","L2","L3","L4","L5","L6"],"w");
+  const WL=[["月光","NT$30萬以下","US$1萬以下"],["超市自由","NT$30萬–300萬","US$1萬–10萬"],["餐廳自由","NT$300萬–3,000萬","US$10萬–100萬"],["旅行自由","NT$3,000萬–3億","US$100萬–1,000萬"],["房子自由","NT$3億–30億","US$1,000萬–1億"],["影響力自由","NT$30億以上","US$1億以上"]];
+  const wh=i=>{ const h=$("wHint"); h.textContent=""; const b=el("b",null,`L${i+1} ${WL[i][0]}`); h.append(b,document.createTextNode(`：淨資產約 ${WL[i][1]}（${WL[i][2]}）`)); };
+  [...$("qW").children].forEach((b,i)=>b.addEventListener("click",()=>wh(i))); if(pick.w!==null) wh(pick.w); else $("wHint").textContent="點一階，看看它的資產範圍。"; chips("qT",OPTS.t,"t"); chips("qS",OPTS.s,"s"); chips("qM",OPTS.m,"m"); chips("qB",OPTS.b,"b");
+  show(["scCreate"]); $("scCreate").scrollIntoView({block:"start"});
+}
+$("goCreate").addEventListener("click",async()=>{
+  if(Object.values(pick).some(v=>v===null)){ $("createMsg").textContent="每一題都選一下，才算完成角色。"; return; }
+  const fresh=!G;
+  G={...(G||{xpBy:{t:0,s:0,m:0,b:0},dex:[],equip:null,draw:null,lastSummon:""}), name:clip($("nm").value,12)||"無名冒險者", goal:clip($("goal").value,40), w:pick.w+1, base:{t:pick.t,s:pick.s,m:pick.m,b:pick.b}};
+  G.avatar=look.avatar||rollAvatar(); G.element=look.element||pickOne(ELEMENTS);
+  save(); if(fresh){ await portal("角色誕生！"); banner("✦ "+G.name+" 誕生了"); } home();
+});
+$("editChar").addEventListener("click",create);
+
+/* ---------- 主畫面 ---------- */
+function home(){
+  // 還沒有練習中的卡：召喚台放大、移到最前面；有的話練習中的卡排前面
+  const w=$("scHome").parentNode; if(G.equip) w.insertBefore($("scEquip"),$("scSummon")); else w.insertBefore($("scSummon"),$("scEquip"));
+  show(["scHome","scSummon","scDex","foot"].concat(G.equip?["scEquip"]:[])); renderHero(); renderEquip(); renderSummon(); renderDex(); }
+function renderHero(){
+  const lv=level(), xp=totalXp(); $("hName").textContent=G.name; $("hTitle").textContent=`Lv ${lv}・${titleOf(lv)}`;
+  $("hSig").textContent=G.avatar; const cl=classOf(); $("hClass").textContent=`${G.element}系・${cl[0]}`; $("hClassDesc").textContent=cl[1]+"。"+(isRare(G.avatar)?"✨ 你抽到了稀有造型！":"");
+  $("hXp").style.width=((xp%50)/50*100)+"%"; $("hXpT").textContent=`${xp%50} / 50 XP`; $("hNext").textContent=nextTitle(lv);
+  const weak=weakOrder()[0], box=$("hStats"); box.textContent="";
+  STATS.forEach(s=>{ const v=statVal(s.k), r=el("div","stat"+(s.k===weak?" weak":"")); r.append(el("span","nm",s.nm)); const bar=el("div","bar"), i=el("i"); i.style.width=v+"%"; i.style.background=s.c; bar.append(i); r.append(bar, el("span","v",String(v))); box.append(r); });
+  $("hW").textContent="L"+G.w; $("hMul").textContent="×"+mul().toFixed(1);
+  $("hPow").textContent=Math.round(STATS.reduce((a,s)=>a+statVal(s.k),0)*mul());
+}
+function cardEl(c){
+  const d=el("div","card "+c.rar); const top=el("div","top"); top.append(el("div","em",c.emoji), el("span","rar",c.rar)); d.append(top);
+  d.append(el("div","tt",c.title), el("div","pact",c.pact)); const sp=el("div","step"); sp.append(el("b",null,"2 分鐘第一步："),document.createTextNode(c.step)); d.append(sp);
+  const st=STATS.find(s=>s.k===c.stat); d.append(el("div","tag",`練成後：${st.nm} +${c.rar==="SSR"?30:c.rar==="SR"?20:15} XP・${c.ai?"Claude 量身打造":"基本卡組"}`)); return d;
+}
+function renderEquip(fresh){
+  const box=$("eqCard"); box.textContent="";
+  if(!G.equip){ box.append(el("div","empty","還沒有練習中的魔法。到下面的召喚台召喚一張吧！")); $("eqNote").textContent=""; return; }
+  const c=G.equip, n=Math.min(c.stamps.length,7), d=cardEl(c), row=el("div","stamps");
+  for(let i=0;i<7;i++) row.append(el("div","stamp"+(i<n?" on":"")+(fresh&&i===n-1?" new":""), i<n?"★":String(i+1)));
+  d.append(row);
+  const done=c.stamps.includes(today()), er=el("div","equip-row");
+  if(n>=7){ const rf=el("div","reflect"); rf.textContent="🎉 練成了！花 1 分鐘回顧：＋ 有用的是什麼？－ 沒用的是什麼？→ 下一步要堅持、調整，還是暫停？"; d.append(rf);
+    const b=el("button","checkin","📖 收進圖鑑"); b.type="button"; b.addEventListener("click",e=>{ const gain=c.rar==="SSR"?30:c.rar==="SR"?20:15, before=level();
+      G.xpBy[c.stat]=(G.xpBy[c.stat]||0)+gain; G.dex.unshift({emoji:c.emoji,title:c.title,stat:c.stat,rar:c.rar,date:today()}); G.equip=null; save(); sparkle(e.currentTarget);
+      banner(`✦ 練成「${c.title}」！${STATS.find(s=>s.k===c.stat).nm} +${gain} XP`); if(level()>before) setTimeout(()=>banner(`🎊 升級！Lv ${level()}・${titleOf(level())}`),1200); home(); });
+    er.append(b); }
+  else { const b=el("button","checkin", done?"今天打卡了 ✓":"✨ 今天打卡"); b.type="button"; b.disabled=done;
+    b.addEventListener("click",e=>{ c.stamps=[...new Set([...c.stamps,today()])]; G.xpBy[c.stat]=(G.xpBy[c.stat]||0)+5; save(); sparkle(e.currentTarget); renderEquip(true); renderHero(); banner(`★ 第 ${Math.min(c.stamps.length,7)} 天！+5 XP`); });
+    er.append(b, el("span","cnt",`第 ${n} / 7 天`)); }
+  d.append(er); box.append(d);
+  $("eqNote").textContent= n<7 && !done && c.stamps.length? "今天還沒打卡，別讓星星斷掉" : "";
+}
+function renderSummon(){
+  const used=G.lastSummon===today(); $("goSummon").disabled=used || !!G.equip;
+  $("scSummon").classList.toggle("big", !G.equip && !used);
+  $("goSummon").textContent= !G.equip && !used ? "🔮 召喚今天的魔法卡" : "🔮 召喚 3 張";
+  $("sumNote").textContent="基本卡組 12 張";
+  $("sumMsg").textContent= G.equip? "先練成手上這張，才能召喚新的。" : used? "今天的召喚用完了，明天再來。" : "今天還能召喚 1 次。";
+  const box=$("drawBox"); box.textContent="";
+  if(!G.equip && G.draw && G.draw.date===today()) G.draw.cards.forEach(c=>box.append(slot(c,true)));
+}
+function slot(c,open){
+  const s=el("div","slot"), f=el("div","flip glow-"+c.rar+(open?" open":"")), back=el("div","face backside"), front=el("div","face front");
+  back.append(el("span",null,"點一下翻牌")); front.append(cardEl(c));
+  const pk=el("button","pick","裝備這張，開始 7 天"); pk.type="button"; pk.addEventListener("click",()=>{ G.equip={...c,stamps:[]}; G.draw=null; save(); banner(`✦ 裝備「${c.title}」`); home(); $("scEquip").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"}); });
+  front.querySelector(".card").append(pk);
+  back.addEventListener("click",()=>{ f.classList.add("open"); if(c.rar==="SSR"){ sparkle(f); banner("✦ SSR 出現了！"); } });
+  f.append(back,front); s.append(f); return s;
+}
+function localCards(order){
+  const done=new Set(G.dex.map(d=>d.title)), pickFrom=k=>{ const pool=DECK[k].filter(x=>!done.has(x[1])); const src=pool.length?pool:DECK[k]; return src[Math.floor(Math.random()*src.length)]; };
+  const ks=[order[0],order[1],order[2+Math.floor(Math.random()*2)]];
+  return ks.map(k=>{ const [emoji,title,pact,step]=pickFrom(k); return {emoji,title,pact,step,stat:k}; });
+}
+async function aiCards(order){
+  const nm=k=>STATS.find(s=>s.k===k).nm, lab=k=>OPTS[k][G.base[k]];
+  const prompt=`你是一位溫暖、務實的成長教練，擅長 Anne-Laure Le Cunff 的 Tiny Experiments（小實驗）方法，正在為一個遊戲化的「小實驗召喚所」設計卡片。
+玩家的狀況：
+- 財富階梯第 ${G.w} 階（Nick Maggiulli《The Wealth Ladder》，財富是放大其他能力的強化器）
+- 時間：每週可自由安排 ${lab("t")}；社交：上個月見讓自己充電的人 ${lab("s")}；心智：每週學習與深度思考 ${lab("m")}；身體：每週運動、睡得好 ${lab("b")}
+- 最弱的能力依序是：${order.map(nm).join("、")}
+- 最想推進的事：${G.goal||"（沒填）"}
+- 已練成：${G.dex.slice(0,8).map(d=>d.title).join("、")||"（還沒有）"}
+請設計 3 張「7 天小實驗」魔法卡：第 1 張練「${nm(order[0])}」，第 2 張練「${nm(order[1])}」，第 3 張練「${nm(order[2])}」或「${nm(order[3])}」，並盡量和他最想推進的事有關。
+規則：門檻低到沒有障礙；繁體中文、台灣用語；不要推薦特定股票或金融商品；不要和已練成的重複。
+只回 JSON：{"cards":[{"stat":"t|s|m|b","emoji":"一個 emoji","title":"像魔法招式的名字，8 字內","pact":"我會＿＿，持續 7 天。（40 字內）","step":"現在 2 分鐘內就能做的第一步（25 字內）"}]}`;
+  const r=await sample.json(prompt,{modelTier:"default",cache:false});
+  const cards=(r&&Array.isArray(r.cards)?r.cards:[]).slice(0,3).map((c,i)=>({stat:["t","s","m","b"].includes(c.stat)?c.stat:order[Math.min(i,3)],emoji:clip(c.emoji,4)||"✨",title:clip(c.title,12),pact:clip(c.pact,60),step:clip(c.step,40),ai:true})).filter(c=>c.title&&c.pact);
+  if(cards.length<3) throw {code:"empty"}; return cards;
+}
+$("goSummon").addEventListener("click",async()=>{
+  const btn=$("goSummon"); btn.disabled=true; const order=weakOrder(); let cards;
+  $("portal").hidden=false; $("portalTxt").textContent= sample? "Claude 正在依你的能力值配牌…" : "召喚陣啟動中…"; $("skipPortal").onclick=null;
+  try{ cards= sample? await aiCards(order) : (await wait(1300), localCards(order)); }
+  catch(e){ const c=e&&e.code; if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)) sample=null;
+    $("sumMsg").textContent= c==="rate_limited"? "你的 Claude 用量到上限了，先用基本卡組。" : "AI 暫時失靈，先用基本卡組。"; cards=localCards(order); }
+  $("portal").hidden=true;
+  cards.forEach((c,i)=>c.rar=["SSR","SR","R"][i]||"R");  // 第 1 張練最弱的能力，最稀有
+  G.draw={date:today(),cards}; G.lastSummon=today(); save(); renderSummon();
+  const box=$("drawBox"); box.textContent=""; cards.forEach(c=>box.append(slot(c,false)));
+  $("sumMsg").textContent="點一下翻開，挑一張裝備。"; box.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+});
+function renderDex(){ const box=$("dex"); box.textContent=""; $("dexNote").textContent=`已練成 ${new Set(G.dex.map(d=>d.title)).size} / 12 招`;
+  if(!G.dex.length){ box.append(el("div","empty","練成的魔法會收在這裡。")); return; }
+  G.dex.forEach(d=>{ const x=el("div"); x.append(el("b",null,d.emoji+" "+d.title), document.createTextNode(`${d.rar}・${STATS.find(s=>s.k===d.stat).nm}・${d.date}`)); box.append(x); }); }
+let armed=false; $("resetAll").addEventListener("click",()=>{ if(!armed){ armed=true; $("resetAll").textContent="確定要清除？再按一次"; return; } try{ localStorage.removeItem(KEY); }catch(e){} G=null; armed=false; $("resetAll").textContent="清除角色重新開始"; show(["scTitle"]); gate(); });
+
+/* ---------- 回饋：匿名 Google 表單，帶入來源和不含個資的遊戲摘要 ---------- */
+const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSeSHMRJA2FxhyhOGMp6OqYmRweTcOnaQxnyK_2YDo0rqmRrKg/viewform";
+const fbLink=()=>{ let sum="還沒建立角色";
+  if(G){ sum=`Lv ${level()}・${titleOf(level())}・財富 L${G.w}・時間 ${statVal("t")}／社交 ${statVal("s")}／心智 ${statVal("m")}／身體 ${statVal("b")}・練成 ${G.dex.length} 招・${G.equip? `練習中第 ${Math.min(G.equip.stamps.length,7)} 天` : "沒有練習中的卡"}・${sample?"AI 卡":"基本卡組"}`; }
+  return FORM_URL+"?usp=pp_url&entry.1404172522="+encodeURIComponent("小實驗召喚所")+"&entry.610336213="+encodeURIComponent(sum); };
+(()=>{ const a=$("fbFab"), upd=()=>{ a.href=fbLink(); }; ["mousedown","focus","click"].forEach(t=>a.addEventListener(t,upd)); a.addEventListener("touchstart",upd,{passive:true}); })();
+
+/* ---------- 預告：AI 量身卡（想搶先玩＝需求訊號）＋分享 ---------- */
+const GAME_URL="https://claude.ai/artifact/LAmnsNW3BStZihxreRjdRD", GAME_MSG="小實驗召喚所：建一個時間、社交、心智、身體的角色，每天抽一張 7 天小實驗卡，把自己練成大法師 🔮";
+(()=>{ const a=$("wantAi"), upd=()=>{ a.href=fbLink().replace(encodeURIComponent("小實驗召喚所"),encodeURIComponent("小實驗召喚所・想搶先玩 AI 量身卡")); };
+  ["mousedown","focus","click"].forEach(t=>a.addEventListener(t,upd)); a.addEventListener("touchstart",upd,{passive:true}); })();
+
+
+/* ---- 分享結果圖：畫成 1080×1350 圖片，先預覽，再分享或儲存 ---- */
+const SHOT={dl:null};
+(async()=>{ try{ if(window.claude&&window.claude.use) SHOT.dl=await window.claude.use("downloads"); }catch(e){} })();
+function wrapText(ctx,text,maxW){ const out=[]; let line="";
+  for(const ch of String(text)){ if(ch==="\n"){ out.push(line); line=""; continue; } const t=line+ch; if(ctx.measureText(t).width>maxW && line){ out.push(line); line=ch.trim()?ch:""; } else line=t; }
+  if(line) out.push(line); return out; }
+function rrect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function openShot(canvas,{filename,text,url}){
+  const old=document.getElementById("shotModal"); if(old) old.remove();
+  const m=document.createElement("div"); m.id="shotModal"; m.className="shot-modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-label","分享結果圖");
+  const box=document.createElement("div"); box.className="shot-box";
+  const img=document.createElement("img"); img.alt="我的結果圖"; img.src=canvas.toDataURL("image/png");
+  const row=document.createElement("div"); row.className="shot-row";
+  const note=document.createElement("p"); note.className="shot-note"; note.textContent="手機可以長按圖片儲存，電腦可以按右鍵另存。";
+  const mk=(t,cls)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=t; if(cls) b.className=cls; row.appendChild(b); return b; };
+  canvas.toBlob(blob=>{
+    const file=new File([blob],filename,{type:"image/png"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      mk("分享圖片","shot-main").addEventListener("click",async()=>{ try{ await navigator.share({files:[file],text:text+" "+url}); note.textContent="謝謝分享！"; }catch(e){ if(!(e&&e.name==="AbortError")) note.textContent="這裡沒辦法直接分享圖片，請長按圖片儲存後再分享。"; } });
+    }
+    if(SHOT.dl){ mk("儲存圖片").addEventListener("click",async()=>{ try{ await SHOT.dl.save({filename,data:blob}); note.textContent="已儲存！"; }catch(e){ note.textContent="沒有儲存。也可以長按或右鍵另存圖片。"; } }); }
+    mk("複製連結").addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(text+" "+url); note.textContent="連結已複製，貼在圖片下面一起分享吧！"; }catch(e){ note.textContent="連結："+url; } });
+    mk("關閉","shot-x").addEventListener("click",()=>m.remove());
+  },"image/png");
+  m.addEventListener("click",e=>{ if(e.target===m) m.remove(); });
+  document.addEventListener("keydown",function esc(e){ if(e.key==="Escape"){ m.remove(); document.removeEventListener("keydown",esc); } });
+  box.append(img,row,note); m.appendChild(box); document.body.appendChild(m);
+}
+
+function drawEmoji(x,t,cx,cy,size){ x.save(); x.font=`${size}px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif`; x.textAlign="left"; x.textBaseline="alphabetic";
+  const m=x.measureText(t), l=m.actualBoundingBoxLeft||0, r=m.actualBoundingBoxRight||m.width, a=m.actualBoundingBoxAscent||size*.8, d=m.actualBoundingBoxDescent||size*.2;
+  x.fillText(t, cx+(l-r)/2, cy+(a-d)/2); x.restore(); }
+async function makeCharCard(){
+  try{ await Promise.all(["400 60px Huninn","700 30px 'Noto Sans TC'","400 30px 'Noto Sans TC'"].map(f=>document.fonts.load(f))); }catch(e){}
+  const W=1080,H=1350,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+  const disp="Huninn,'PingFang TC','Noto Sans TC',sans-serif", sans="'Noto Sans TC','PingFang TC',sans-serif";
+  const g=x.createRadialGradient(W/2,-100,50,W/2,200,1100); g.addColorStop(0,"#2f3080"); g.addColorStop(1,"#12122b"); x.fillStyle=g; x.fillRect(0,0,W,H);
+  for(let i=0;i<70;i++){ x.fillStyle=`rgba(255,255,255,${.25+Math.random()*.5})`; x.beginPath(); x.arc(Math.random()*W,Math.random()*H,Math.random()*2+.5,0,7); x.fill(); }
+  const L=90, R=W-90; x.fillStyle="#f2c14e"; x.font=`700 26px ${sans}`; x.fillText("小 實 驗 召 喚 所",L,120);
+  // 角色
+  const lv=level(), cl=classOf(), AX=L+95, AY=225;
+  const ring=x.createConicGradient? x.createConicGradient(0,AX,AY) : null; if(ring){ ["#8cb8ff","#ff8fb1","#c9a2ff","#7fe3cf","#8cb8ff"].forEach((c,i)=>ring.addColorStop(i/4,c)); }
+  x.save(); x.shadowColor="#c9a2ffaa"; x.shadowBlur=40; x.fillStyle=ring||"#c9a2ff"; x.beginPath(); x.arc(AX,AY,95,0,7); x.fill(); x.restore();
+  x.fillStyle="#1d1d45"; x.beginPath(); x.arc(AX,AY,82,0,7); x.fill();
+  drawEmoji(x,G.avatar,AX,AY,104);
+  const TX=L+220; x.fillStyle="#fbf1de"; x.font=`400 60px ${disp}`; x.fillText(G.name,TX,200);
+  x.fillStyle="#7fe3cf"; x.font=`400 36px ${disp}`; x.fillText(`${G.element}系・${cl[0]}`,TX,252);
+  x.fillStyle="#f2c14e"; x.font=`700 28px ${sans}`; x.fillText(`Lv ${lv}・${titleOf(lv)}${isRare(G.avatar)?"　✨ 稀有造型":""}`,TX,298);
+  // 四項能力＋和剛開始比較
+  const cols={t:"#8cb8ff",s:"#ff8fb1",m:"#c9a2ff",b:"#7fe3cf"}; let y=380;
+  const order=STATS.map(s=>s.k).sort((a,b)=>statVal(b)-statVal(a)), best=order[0], weak=order[3];
+  STATS.forEach(st=>{ const v=statVal(st.k), start=(G.base[st.k]+1)*15, diff=v-start;
+    x.fillStyle="#f3eefc"; x.font=`400 34px ${disp}`; x.fillText(st.nm,L,y+26);
+    x.fillStyle="#272861"; rrect(x,L+110,y,R-L-260,30,15); x.fill(); x.fillStyle=cols[st.k]; rrect(x,L+110,y,Math.max((R-L-260)*v/100,30),30,15); x.fill();
+    x.fillStyle="#f3eefc"; x.font=`700 30px ${sans}`; x.fillText(String(v),R-130,y+26);
+    if(diff>0){ x.fillStyle="#7fe3cf"; x.font=`700 26px ${sans}`; x.fillText(`↑${diff}`,R-62,y+26); }
+    y+=62; });
+  x.fillStyle="#c3bde0"; x.font=`400 28px ${sans}`;
+  const grew=STATS.some(st=>statVal(st.k)>(G.base[st.k]+1)*15);
+  x.fillText(`最強：${STATS.find(s=>s.k===best).nm}　正在補強：${STATS.find(s=>s.k===weak).nm}${grew?"　（↑ 是打卡練出來的成長）":""}`,L,y+14);
+  // 卡面：練習中的卡，沒有就用最近練成的
+  const c0=G.equip || (G.dex[0]? {...G.dex[0],pact:"",step:"",stamps:Array(7).fill(1),done:true} : null);
+  const cy=y+50, ch=430; const rc={SSR:"#f2b630",SR:"#ff8fb1",R:"#8cb8ff"};
+  if(c0){
+    x.save(); x.shadowColor= c0.rar==="SSR"?"#f2c14eaa":"#0009"; x.shadowBlur=40; x.fillStyle="#fbf1de"; rrect(x,L,cy,R-L,ch,32); x.fill(); x.restore();
+    x.strokeStyle=rc[c0.rar]||"#d8c8a8"; x.lineWidth=8; rrect(x,L,cy,R-L,ch,32); x.stroke();
+    x.fillStyle="#fff"; rrect(x,L+36,cy+36,96,96,24); x.fill(); drawEmoji(x,c0.emoji||"✨",L+84,cy+84,58);
+    x.fillStyle=rc[c0.rar]||"#8cb8ff"; rrect(x,R-150,cy+50,110,48,24); x.fill(); x.fillStyle="#fff"; x.font=`400 30px ${disp}`; x.fillText(c0.rar||"R",R-150+(110-x.measureText(c0.rar||"R").width)/2,cy+85);
+    x.fillStyle="#3b2d4f"; x.font=`400 52px ${disp}`; x.fillText(c0.title,L+36,cy+200);
+    let ty=cy+250; x.font=`400 30px ${sans}`; x.fillStyle="#5c4d72";
+    if(c0.pact) wrapText(x,c0.pact,R-L-72).slice(0,2).forEach(ln=>{ x.fillText(ln,L+36,ty); ty+=44; });
+    else { x.fillText(`已練成・${STATS.find(s=>s.k===c0.stat).nm}`,L+36,ty); ty+=44; }
+    const n=c0.done?7:Math.min(c0.stamps.length,7), sw=(R-L-72-6*14)/7, sy=cy+ch-108;
+    for(let i=0;i<7;i++){ const cx=L+36+i*(sw+14)+sw/2, r=Math.min(sw/2,36);
+      if(i<n){ const gg=x.createRadialGradient(cx-10,sy-10,4,cx,sy,r); gg.addColorStop(0,"#fff7cf"); gg.addColorStop(.6,"#ffc94d"); gg.addColorStop(1,"#f0a000"); x.fillStyle=gg; x.beginPath(); x.arc(cx,sy,r,0,7); x.fill(); x.fillStyle="#7a4a00"; x.font=`700 34px ${sans}`; x.fillText("★",cx-15,sy+12); }
+      else { x.setLineDash([8,8]); x.strokeStyle="#b9a6d6"; x.lineWidth=4; x.beginPath(); x.arc(cx,sy,r-2,0,7); x.stroke(); x.setLineDash([]); } }
+    x.fillStyle="#3b2d4f"; x.font=`700 32px ${sans}`; x.fillText(c0.done? "✦ 已練成！" : `✦ 第 ${n} / 7 天，練習中`,L+36,cy+ch-36);
+  } else if(G.draw && G.draw.cards && G.draw.cards.length){
+    x.fillStyle="#f2c14e"; x.font=`700 30px ${sans}`; x.fillText("我召喚到的魔法卡",L,cy+24);
+    const n=G.draw.cards.length, gap=24, cw=(R-L-gap*(n-1))/n, chh=ch-100, top0=cy+56;
+    G.draw.cards.forEach((c,i)=>{ const cx=L+i*(cw+gap), col=rc[c.rar]||"#8cb8ff";
+      x.save(); x.shadowColor= c.rar==="SSR"?"#f2c14ecc":"#0009"; x.shadowBlur= c.rar==="SSR"?44:24; x.fillStyle="#fbf1de"; rrect(x,cx,top0,cw,chh,26); x.fill(); x.restore();
+      x.strokeStyle=col; x.lineWidth=7; rrect(x,cx,top0,cw,chh,26); x.stroke();
+      x.fillStyle=col; rrect(x,cx+cw-96,top0+22,76,40,20); x.fill(); x.fillStyle="#fff"; x.font=`400 24px ${disp}`; const rw=x.measureText(c.rar).width; x.fillText(c.rar,cx+cw-58-rw/2,top0+51);
+      drawEmoji(x,c.emoji||"✨",cx+cw/2,top0+140,80); x.textAlign="center";
+      x.fillStyle="#3b2d4f"; x.font=`400 36px ${disp}`; wrapText(x,c.title,cw-30).slice(0,2).forEach((ln,j)=>x.fillText(ln,cx+cw/2,top0+240+j*44));
+      x.fillStyle="#7d6f93"; x.font=`500 24px ${sans}`; x.fillText(STATS.find(s=>s.k===c.stat).nm,cx+cw/2,top0+chh-28); x.textAlign="left"; });
+  } else {
+    x.fillStyle="#ffffff12"; rrect(x,L,cy,R-L,ch-80,32); x.fill(); x.strokeStyle="#f2c14e88"; x.setLineDash([12,10]); x.lineWidth=3; rrect(x,L,cy,R-L,ch-80,32); x.stroke(); x.setLineDash([]);
+    x.fillStyle="#f2c14e"; x.font=`700 28px ${sans}`; x.fillText("職業特性",L+40,cy+70);
+    x.fillStyle="#fbf1de"; x.font=`400 44px ${disp}`; x.fillText(cl[0],L+40,cy+135);
+    x.fillStyle="#c3bde0"; x.font=`400 32px ${sans}`; wrapText(x,cl[1],R-L-80).slice(0,2).forEach((ln,i)=>x.fillText(ln,L+40,cy+195+i*46));
+    x.fillStyle="#fbf1de"; x.font=`700 30px ${sans}`; x.fillText(`第一招會從「${STATS.find(s=>s.k===weak).nm}」開始練 ✦`,L+40,cy+ch-130); }
+  // 敘述＋頁尾
+  x.fillStyle="#fbf1de"; x.font=`400 34px ${disp}`;
+  const done=new Set(G.dex.map(d=>d.title)).size;
+  const story= !G.equip && G.draw && G.draw.cards ? `我今天召喚到 ${G.draw.cards.map(c=>c.rar).join("、")}，你猜我會選哪一張？` : G.equip? `我正在練「${G.equip.title}」${done?`，已經練成 ${done} / 12 招`:"，這是我的第一招"}。` : done? `我已經練成 ${done} / 12 招。` : `我是${G.element}系的${cl[0]}，冒險才剛開始！`;
+  const sy0=Math.max(cy+ch+80, H-200); wrapText(x,story,R-L).slice(0,2).forEach((ln,i)=>x.fillText(ln,L,sy0+i*46));
+  x.fillStyle="#f2c14e"; x.font=`700 30px ${sans}`; x.fillText("你會抽到什麼造型？來召喚看看 →",L,H-80);
+  return c;
+}
+$("shotBtn").addEventListener("click",async()=>{ const c=await makeCharCard(); openShot(c,{filename:"我的魔法角色卡.png",text:"我在小實驗召喚所抽到了這個角色，你會抽到什麼造型？🔮",url:GAME_URL}); });
+
+/* ---------- 啟動 ---------- */
+if(G && !G.avatar){ G.avatar=rollAvatar(); G.element=pickOne(ELEMENTS); save(); }
+show(["scTitle"]); gate();
+// 第一版只用內建卡組；AI 量身卡留到下一版（見「🔒 AI 量身卡」預告）
+})();
+</script>
