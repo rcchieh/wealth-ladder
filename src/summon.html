@@ -158,7 +158,11 @@ button:disabled{opacity:.55;cursor:default}
 .lk-t{font:400 20px var(--disp);color:var(--paper)}
 .locked p{margin:0;font-size:14px;color:var(--text-2)}
 .lk-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.lk-want{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;text-decoration:none;font-size:14px}
+.lk-perk{margin:0;font-size:12.5px;color:var(--gold)}
+.lk-want:disabled{opacity:1;background:#f2c14e33;color:var(--gold);cursor:default}
+.lk-sub{display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border-radius:999px;border:1.5px solid var(--gold);color:var(--paper);font-weight:700;font-size:14px;text-decoration:none}
+.badge-early{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:999px;font:700 11.5px var(--sans);color:#12122b;background:linear-gradient(90deg,#f2c14e,#ffe08a);vertical-align:middle}
+.lk-want{border:0;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;text-decoration:none;font-size:14px}
 .lk-share{background:transparent;color:var(--paper);border:1.5px solid var(--line);font-size:14px}
 .shot-modal{position:fixed;inset:0;z-index:80;background:#0b0b1fd9;display:grid;place-items:center;padding:16px}
 .shot-box{background:var(--sky);border:1px solid var(--line);border-radius:18px;padding:14px;width:min(420px,100%);max-height:100%;overflow:auto;display:grid;gap:10px}
@@ -227,7 +231,7 @@ footer a{color:var(--text-2)}
   <!-- 角色卡：成就感 -->
   <section class="panel hero" id="scHome" hidden>
     <div class="who"><div class="sigil"><span id="hSig"></span></div>
-      <div><h2 id="hName">冒險者</h2><div class="cls" id="hClass">極光系・星辰賢者</div><div class="ttl" id="hTitle">Lv 1・見習魔法學徒</div></div></div>
+      <div><h2 id="hName">冒險者</h2><div class="cls" id="hClass">極光系・星辰賢者</div><div class="ttl"><span id="hTitle">Lv 1・見習魔法學徒</span><span class="badge-early" id="hEarly" hidden>🌟 先行者</span></div></div></div>
     <p class="note" id="hClassDesc" style="margin:0"></p>
     <div><div class="xp"><i id="hXp" style="width:0"></i></div><div class="xpmeta"><span id="hXpT">0 / 50 XP</span><span id="hNext">下一個稱號：初級魔法師</span></div></div>
     <div class="stats" id="hStats"></div>
@@ -255,8 +259,10 @@ footer a{color:var(--text-2)}
       <div class="lk-t">AI 量身卡・下一版解鎖</div>
       <p>Claude 會讀你的四項能力和最想推進的事，為你一個人打造專屬魔法卡：連招式名字和第一步，都只屬於你。</p>
       <div class="lk-row">
-        <a class="lk-want" id="wantAi" href="#" target="_blank" rel="noopener">✋ 我想搶先玩</a>
+        <button type="button" class="lk-want" id="wantAi">🔔 預約解鎖</button>
+        <a class="lk-sub" id="subLink" href="#" target="_blank" rel="noopener" hidden>📬 解鎖時第一個通知我</a>
       </div>
+      <p class="lk-perk" id="lkPerk">預約就送「🌟 先行者」徽章，馬上出現在你的角色卡上。</p>
     </div>
   </section>
 
@@ -422,7 +428,7 @@ function home(){
   show(["scHome","scSummon","scDex","foot"].concat(G.equip?["scEquip"]:[])); renderHero(); renderEquip(); renderSummon(); renderDex(); }
 function renderHero(){
   const lv=level(), xp=totalXp(); $("hName").textContent=G.name; $("hTitle").textContent=`Lv ${lv}・${titleOf(lv)}`;
-  $("hSig").innerHTML=avatarSVG(G.avatar); const cl=classOf(); $("hClass").textContent=`${G.element}系・${cl[0]}`; $("hClassDesc").textContent=`造型：${charName(G.avatar)}${isRare(G.avatar)?"（✨ 稀有）":""}。`+cl[1]+"。";
+  $("hSig").innerHTML=avatarSVG(G.avatar); $("hEarly").hidden=!G.early; renderTeaser(); const cl=classOf(); $("hClass").textContent=`${G.element}系・${cl[0]}`; $("hClassDesc").textContent=`造型：${charName(G.avatar)}${isRare(G.avatar)?"（✨ 稀有）":""}。`+cl[1]+"。";
   $("hXp").style.width=((xp%50)/50*100)+"%"; $("hXpT").textContent=`${xp%50} / 50 XP`; $("hNext").textContent=nextTitle(lv);
   const weak=weakOrder()[0], box=$("hStats"); box.textContent="";
   STATS.forEach(s=>{ const v=statVal(s.k), r=el("div","stat"+(s.k===weak?" weak":"")); r.append(el("span","nm",s.nm)); const bar=el("div","bar"), i=el("i"); i.style.width=v+"%"; i.style.background=s.c; bar.append(i); r.append(bar, el("span","v",String(v))); box.append(r); });
@@ -516,8 +522,15 @@ const fbLink=()=>{ let sum="還沒建立角色";
 
 /* ---------- 預告：AI 量身卡（想搶先玩＝需求訊號）＋分享 ---------- */
 const GAME_URL="https://claude.ai/artifact/LAmnsNW3BStZihxreRjdRD", GAME_MSG="小實驗召喚所：建一個時間、社交、心智、身體的角色，每天抽一張 7 天小實驗卡，把自己練成大法師 🔮";
-(()=>{ const a=$("wantAi"), upd=()=>{ a.href=fbLink().replace(encodeURIComponent("小實驗召喚所"),encodeURIComponent("小實驗召喚所・想搶先玩 AI 量身卡")); };
-  ["mousedown","focus","click"].forEach(t=>a.addEventListener(t,upd)); a.addEventListener("touchstart",upd,{passive:true}); })();
+// 預約：一鍵完成，立刻送先行者徽章；網站版會把預約送進試算表（WL_SEND），claude.ai 版只記在本機
+const SUBSTACK_URL="https://chiehgina.substack.com/";   // 填入 Substack 訂閱網址後，「解鎖時第一個通知我」就會出現
+function renderTeaser(){ if(!G) return; const b=$("wantAi"), sub=$("subLink");
+  if(G.early){ b.disabled=true; b.textContent="✅ 已預約"; $("lkPerk").textContent= G.earlyN? `你是第 ${G.earlyN} 位預約的冒險者，「🌟 先行者」徽章已經在你的角色卡上了。` : "「🌟 先行者」徽章已經在你的角色卡上了，解鎖時會優先開放給你。"; }
+  if(SUBSTACK_URL){ sub.href=SUBSTACK_URL; sub.hidden=false; } }
+$("wantAi").addEventListener("click",async e=>{ if(!G||G.early) return;
+  G.early=true; G.earlyAt=today(); save(); sparkle(e.currentTarget); banner("🌟 你成為先行者了！"); renderHero();
+  if(window.WL_SEND){ const r=await window.WL_SEND({hours:"—",goal:"—",note:"🔔 預約 AI 量身卡",job:"",source:"預約 AI 量身卡",summary:(()=>{ try{ return decodeURIComponent((fbLink().split("entry.610336213=")[1]||"")); }catch(_){ return ""; } })()});
+    if(r && r.n){ G.earlyN=r.n; save(); renderTeaser(); } } });
 
 
 /* ---- 分享結果圖：畫成 1080×1350 圖片，先預覽，再分享或儲存 ---- */
@@ -567,7 +580,7 @@ async function makeCharCard(){
   { const im=await avatarImage(G.avatar); if(im){ x.save(); x.beginPath(); x.arc(AX,AY,82,0,7); x.clip(); x.drawImage(im,AX-80,AY-74,160,160); x.restore(); } }
   const TX=L+220; x.fillStyle="#fbf1de"; x.font=`400 60px ${disp}`; x.fillText(G.name,TX,200);
   x.fillStyle="#7fe3cf"; x.font=`400 36px ${disp}`; x.fillText(`${G.element}系・${cl[0]}`,TX,252);
-  x.fillStyle="#f2c14e"; x.font=`700 28px ${sans}`; x.fillText(`Lv ${lv}・${titleOf(lv)}${isRare(G.avatar)?"　✨ 稀有造型":""}`,TX,298);
+  x.fillStyle="#f2c14e"; x.font=`700 28px ${sans}`; x.fillText(`Lv ${lv}・${titleOf(lv)}${isRare(G.avatar)?"　✨ 稀有造型":""}${G.early?"　🌟 先行者":""}`,TX,298);
   // 四項能力＋和剛開始比較
   const cols={t:"#8cb8ff",s:"#ff8fb1",m:"#c9a2ff",b:"#7fe3cf"}; let y=380;
   const order=STATS.map(s=>s.k).sort((a,b)=>statVal(b)-statVal(a)), best=order[0], weak=order[3];

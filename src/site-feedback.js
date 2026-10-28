@@ -49,7 +49,9 @@
     });
   }
   // 原本連到 Google 表單的按鈕，改成打開這個視窗；來源和摘要沿用原本的帶入內容
-  ["fabFb","dkFb","fbFab","wantAi"].forEach(id=>{ const a=document.getElementById(id); if(!a) return;
+  // 其他功能（例如預約 AI 量身卡）也用同一個接收端；回傳伺服器的 JSON
+  window.WL_SEND=async d=>{ try{ const r=await fetch(EP,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...d,cid:cid+"-"+(d.source||"")})}); return await r.json(); }catch(e){ return null; } };
+  ["fabFb","dkFb","fbFab"].forEach(id=>{ const a=document.getElementById(id); if(!a) return;
     a.addEventListener("click",e=>{ e.preventDefault(); e.stopImmediatePropagation(); a.dispatchEvent(new MouseEvent("mousedown"));
       let u; try{ u=new URL(a.href); }catch(_){ u=null; }
       open({source:u? u.searchParams.get("entry.1404172522")||"" : "", summary:u? u.searchParams.get("entry.610336213")||"" : ""}); }, true); });

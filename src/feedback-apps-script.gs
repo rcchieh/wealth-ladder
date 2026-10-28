@@ -21,6 +21,10 @@ function doPost(e) {
     const sh = ss.getSheetByName(SHEET) || ss.insertSheet(SHEET);
     if (sh.getLastRow() === 0) sh.appendRow(HEAD);
     sh.appendRow(row);
+    if (row[5] === '預約 AI 量身卡') {                               // 預約：回傳這是第幾位預約者
+      const src = sh.getRange(2, 6, Math.max(sh.getLastRow() - 1, 1), 1).getValues();
+      return out({ ok: true, n: src.filter(r => r[0] === '預約 AI 量身卡').length });
+    }
     return out({ ok: true });
   } catch (err) {
     return out({ ok: false, error: 'server' });
