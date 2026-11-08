@@ -178,6 +178,8 @@ button:disabled{opacity:.55;cursor:default}
 .lk-sub{display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border-radius:999px;border:1.5px solid var(--gold);color:var(--paper);font-weight:700;font-size:14px;text-decoration:none}
 .badge-early{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:999px;font:700 11.5px var(--sans);color:#12122b;background:linear-gradient(90deg,#f2c14e,#ffe08a);vertical-align:middle}
 .lk-want{border:0;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;text-decoration:none;font-size:14px}
+.lk-mail{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.lk-mail input{flex:1 1 200px;min-width:0;font:16px var(--sans);color:var(--text);background:var(--sky-2);border:1px solid var(--line);border-radius:999px;padding:10px 16px;min-height:44px}
+.lk-mail-msg{margin:0;font-size:12.5px;color:#ff8fb1}
 .lk-share{background:transparent;color:var(--paper);border:1.5px solid var(--line);font-size:14px}
 .shot-modal{position:fixed;inset:0;z-index:80;background:#0b0b1fd9;display:grid;place-items:center;padding:16px}
 .shot-box{background:var(--sky);border:1px solid var(--line);border-radius:18px;padding:14px;width:min(420px,100%);max-height:100%;overflow:auto;display:grid;gap:10px}
@@ -281,6 +283,11 @@ footer a{color:var(--text-2)}
         <button type="button" class="lk-want" id="wantAi">🔔 預約解鎖</button>
         <a class="lk-sub" id="subLink" href="#" target="_blank" rel="noopener" hidden>📬 解鎖時第一個通知我</a>
       </div>
+      <form class="lk-mail" id="lkMail" hidden novalidate>
+        <input type="email" id="lkEmail" autocomplete="email" inputmode="email" maxlength="100" placeholder="你的 Email" aria-label="你的 Email">
+        <button type="submit" class="lk-want" id="lkSend">送出預約</button>
+      </form>
+      <p class="lk-mail-msg" id="lkMailMsg" hidden></p>
       <p class="lk-perk" id="lkPerk">預約就送「🌟 先行者」徽章，馬上出現在你的角色卡上。</p>
     </div>
   </section>
@@ -541,15 +548,28 @@ const fbLink=()=>{ let sum="還沒建立角色";
 
 /* ---------- 預告：AI 量身卡（想搶先玩＝需求訊號）＋分享 ---------- */
 const GAME_URL="https://rcchieh.github.io/wealth-ladder/summon/", GAME_MSG="小實驗召喚所：建一個時間、社交、心智、身體的角色，每天抽一張 7 天小實驗卡，把自己練成大法師 🔮";
-// 預約：一鍵完成，立刻送先行者徽章；網站版會把預約送進試算表（WL_SEND），claude.ai 版只記在本機
+// 預約：網站版要留 Email 才送出（WL_SEND 進試算表，開放時我親自寫信）；claude.ai 版一鍵完成、只記在本機
+// 之前一鍵預約、沒留 Email 的人，會看到補填 Email 的欄位
 const SUBSTACK_URL="https://chiehgina.substack.com/";   // 填入 Substack 訂閱網址後，「解鎖時第一個通知我」就會出現
 function renderTeaser(){ if(!G) return; const b=$("wantAi"), sub=$("subLink");
   if(G.early){ b.disabled=true; b.textContent="✅ 已預約"; $("lkPerk").textContent= G.earlyN? `你是第 ${G.earlyN} 位預約的冒險者，「🌟 先行者」徽章已經在你的角色卡上了。` : "「🌟 先行者」徽章已經在你的角色卡上了，解鎖時會優先開放給你。"; }
+  if(window.WL_SEND && G.early && !G.mailed){ $("lkMail").hidden=false; $("lkSend").textContent="留 Email"; $("lkPerk").textContent="想在開放時收到我的信？留個 Email，我會親自寫信給你。"; }
+  if(G.mailed) $("lkPerk").textContent+=" 開放時我會寫信給你 📬";
   if(SUBSTACK_URL){ sub.href=SUBSTACK_URL; sub.hidden=false; } }
-$("wantAi").addEventListener("click",async e=>{ if(!G||G.early) return;
-  G.early=true; G.earlyAt=today(); save(); sparkle(e.currentTarget); banner("🌟 你成為先行者了！"); renderHero();
-  if(window.WL_SEND){ const r=await window.WL_SEND({hours:"—",goal:"—",note:"🔔 預約 AI 量身卡",job:"",source:"預約 AI 量身卡",summary:(()=>{ try{ return decodeURIComponent((fbLink().split("entry.610336213=")[1]||"")); }catch(_){ return ""; } })()});
-    if(r && r.n){ G.earlyN=r.n; save(); renderTeaser(); } } });
+const fbSummary=()=>{ try{ return decodeURIComponent((fbLink().split("entry.610336213=")[1]||"")); }catch(_){ return ""; } };
+$("wantAi").addEventListener("click",e=>{ if(!G||G.early) return;
+  if(window.WL_SEND){ $("lkMail").hidden=false; $("lkPerk").textContent="留個 Email 就完成預約：AI 量身卡開放時，我會親自寫信給你，不會拿去做別的事。"; $("lkEmail").focus(); return; }
+  G.early=true; G.earlyAt=today(); save(); sparkle(e.currentTarget); banner("🌟 你成為先行者了！"); renderHero(); });
+$("lkMail").addEventListener("submit",async e=>{ e.preventDefault(); if(!G) return;
+  const email=$("lkEmail").value.trim(), msg=$("lkMailMsg"), btn=$("lkSend");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ msg.textContent="Email 好像少了什麼，再檢查一下？"; msg.hidden=false; return; }
+  msg.hidden=true; btn.disabled=true; const label=btn.textContent; btn.textContent="送出中…";
+  const was=G.early, r=await window.WL_SEND({hours:"—",goal:"—",note:"🔔 預約 AI 量身卡",job:"",source:was?"預約 AI 量身卡・補 Email":"預約 AI 量身卡",summary:fbSummary(),email});
+  btn.disabled=false; btn.textContent=label;
+  if(!r || !r.ok){ msg.textContent= r&&r.error==="too_fast" ? "剛剛已經收到了，等 30 秒再試。" : "送出失敗了，再試一次？"; msg.hidden=false; return; }
+  $("lkMail").hidden=true; G.mailed=true;
+  if(!was){ G.early=true; G.earlyAt=today(); if(r.n) G.earlyN=r.n; save(); sparkle(btn); banner("🌟 你成為先行者了！"); renderHero(); }
+  else { save(); renderTeaser(); banner("📬 收到 Email 了，開放時我會寫信給你"); } });
 
 
 /* ---- 分享結果圖：畫成 1080×1350 圖片，先預覽，再分享或儲存 ---- */
