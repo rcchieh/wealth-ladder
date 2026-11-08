@@ -12,6 +12,7 @@
 .wfb-q{display:grid;gap:6px}.wfb-q>b{font-size:14px}.wfb-q>b small{font-weight:400;color:#8a90a0}
 .wfb-chips{display:flex;flex-wrap:wrap;gap:6px}.wfb-chips button{min-height:40px;border-radius:999px;border:1px solid #d6dae3;background:#f6f7fa;color:#3a4152;padding:6px 12px;font:500 13.5px inherit;font-family:inherit;cursor:pointer}
 .wfb-chips button[aria-pressed="true"]{background:#2a78d6;border-color:#2a78d6;color:#fff}
+.wfb-box input[type=email]{min-height:44px;border-radius:12px;border:1px solid #d6dae3;padding:8px 12px;font:16px inherit;font-family:inherit}
 .wfb-box textarea{min-height:90px;border-radius:12px;border:1px solid #d6dae3;padding:10px;font:16px inherit;font-family:inherit;resize:vertical}
 .wfb-sum{font-size:12px;color:#8a90a0;background:#f6f7fa;border-radius:10px;padding:8px 10px}
 .wfb-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.wfb-send{min-height:46px;border:0;border-radius:999px;background:#2a78d6;color:#fff;font:700 15px inherit;font-family:inherit;padding:10px 22px;cursor:pointer}
@@ -25,25 +26,27 @@
   function open(ctx){
     const old=document.querySelector(".wfb"); if(old) old.remove();
     const m=el("div","wfb"), box=el("div","wfb-box"); m.setAttribute("role","dialog"); m.setAttribute("aria-label","告訴我怎麼讓它更好");
-    box.append(el("h3",null,"💬 告訴我怎麼讓它更好"), el("p","wfb-lead","這是我一個人做的小工具，沒有廣告、不賣東西。全程匿名，30 秒回答 3 題就是最好的支持 🙏"));
+    box.append(el("h3",null,"💬 告訴我怎麼讓它更好"), el("p","wfb-lead","這是我一個人做的小工具，沒有廣告、不賣東西。30 秒回答 3 題就是最好的支持 🙏（Email 選填，不留就是匿名）"));
     const qh=chips(HOURS), qg=chips(GOALS), qj=chips(JOBS,true);
     const q=(t,node,sm)=>{ const d=el("div","wfb-q"), b=el("b",null,t); if(sm) b.appendChild(el("small",null," "+sm)); d.append(b,node); return d; };
     const ta=el("textarea"); ta.maxLength=500; ta.placeholder="最喜歡或最想改的地方"; ta.setAttribute("aria-label","回饋");
+    const em=el("input"); em.type="email"; em.maxLength=100; em.autocomplete="email"; em.inputMode="email"; em.placeholder="you@example.com"; em.setAttribute("aria-label","Email");
     const hp=el("input","wfb-hp"); hp.tabIndex=-1; hp.autocomplete="off"; hp.setAttribute("aria-hidden","true");
-    box.append(q("每週願意花在副業或自我成長的時間",qh.w), q("你的目標",qg.w), q("回饋",ta), q("工作",qj.w,"（選填）"), hp);
+    box.append(q("每週願意花在副業或自我成長的時間",qh.w), q("你的目標",qg.w), q("回饋",ta), q("工作",qj.w,"（選填）"), q("想收到我的新文章和小工具更新？",em,"（選填，留 Email 就好）"), hp);
     if(ctx.summary) box.append(el("p","wfb-sum","會一起送出的匿名摘要（不含任何金額）："+ctx.summary));
     const msg=el("p","wfb-msg"), row=el("div","wfb-row"), send=el("button","wfb-send","送出"), x=el("button","wfb-x","關閉"); send.type=x.type="button";
     row.append(send,x); box.append(row,msg); m.appendChild(box); document.body.appendChild(m);
     const close=()=>m.remove(); x.addEventListener("click",close); m.addEventListener("click",e=>{ if(e.target===m) close(); });
     document.addEventListener("keydown",function esc(e){ if(e.key==="Escape"){ close(); document.removeEventListener("keydown",esc); } });
     send.addEventListener("click",async()=>{
-      const d={hours:qh.get(), goal:qg.get(), note:ta.value.trim(), job:qj.get(), source:ctx.source||document.title, summary:ctx.summary||"", cid, website:hp.value};
-      if(!d.hours||!d.goal||!d.note){ msg.textContent="三題都要填喔（工作可以不填）。"; return; }
+      const d={hours:qh.get(), goal:qg.get(), note:ta.value.trim(), job:qj.get(), source:ctx.source||document.title, summary:ctx.summary||"", email:em.value.trim(), cid, website:hp.value};
+      if(!d.hours||!d.goal||!d.note){ msg.textContent="三題都要填喔（工作和 Email 可以不填）。"; return; }
+      if(d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)){ msg.textContent="Email 好像少了什麼，再檢查一下？"; return; }
       send.disabled=true; send.textContent="送出中…"; msg.textContent="";
       let ok=false; try{ const r=await fetch(EP,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(d)}); const j=await r.json().catch(()=>({ok:r.ok})); ok=!!j.ok;
         if(!ok && j.error==="too_fast"){ msg.textContent="剛剛已經收到了，等 30 秒再送一次。"; } }
       catch(e){ try{ await fetch(EP,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(d)}); ok=true; }catch(_){ ok=false; } }
-      if(ok){ ls.set("wl-fb-last",String(Date.now())); box.textContent=""; const dn=el("div","wfb-done"); dn.append(el("div","big","🙏"), el("h3",null,"收到了，謝謝你！"), el("p","wfb-lead","你的回饋會直接讓下一版變得更好。"));
+      if(ok){ ls.set("wl-fb-last",String(Date.now())); box.textContent=""; const dn=el("div","wfb-done"); dn.append(el("div","big","🙏"), el("h3",null,"收到了，謝謝你！"), el("p","wfb-lead", d.email? "你的回饋會直接讓下一版變得更好。有新文章或更新時，我會寫信給你 📬" : "你的回饋會直接讓下一版變得更好。"));
         const c=el("button","wfb-send","關閉"); c.type="button"; c.addEventListener("click",close); dn.append(c); box.append(dn); }
       else { send.disabled=false; send.textContent="再送一次"; if(!msg.textContent){ msg.textContent="送出失敗了。可以再試一次，或改用"; const a=el("a",null,"Google 表單"); a.href=FORM; a.target="_blank"; a.rel="noopener"; msg.append(a); } }
     });
