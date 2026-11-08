@@ -262,7 +262,6 @@ footer a{color:var(--text-2)}
       <p>Claude 會讀你的四項能力和最想推進的事，為你一個人打造專屬魔法卡：連招式名字和第一步，都只屬於你。</p>
       <div class="lk-row">
         <button type="button" class="lk-want" id="wantAi">🔔 預約解鎖</button>
-        <a class="lk-sub" id="subLink" href="#" target="_blank" rel="noopener" hidden>📬 解鎖時第一個通知我</a>
       </div>
       <form class="lk-mail" id="lkMail" hidden novalidate>
         <input type="email" id="lkEmail" autocomplete="email" inputmode="email" maxlength="100" placeholder="你的 Email" aria-label="你的 Email">
@@ -531,12 +530,11 @@ const fbLink=()=>{ let sum="還沒建立角色";
 const GAME_URL="https://claude.ai/artifact/LAmnsNW3BStZihxreRjdRD", GAME_MSG="小實驗召喚所：建一個時間、社交、心智、身體的角色，每天抽一張 7 天小實驗卡，把自己練成大法師 🔮";
 // 預約：網站版要留 Email 才送出（WL_SEND 進試算表，開放時我親自寫信）；claude.ai 版一鍵完成、只記在本機
 // 之前一鍵預約、沒留 Email 的人，會看到補填 Email 的欄位
-const SUBSTACK_URL="https://chiehgina.substack.com/";   // 填入 Substack 訂閱網址後，「解鎖時第一個通知我」就會出現
-function renderTeaser(){ if(!G) return; const b=$("wantAi"), sub=$("subLink");
+function renderTeaser(){ if(!G) return; const b=$("wantAi");
   if(G.early){ b.disabled=true; b.textContent="✅ 已預約"; $("lkPerk").textContent= G.earlyN? `你是第 ${G.earlyN} 位預約的冒險者，「🌟 先行者」徽章已經在你的角色卡上了。` : "「🌟 先行者」徽章已經在你的角色卡上了，解鎖時會優先開放給你。"; }
   if(window.WL_SEND && G.early && !G.mailed){ $("lkMail").hidden=false; $("lkSend").textContent="留 Email"; $("lkPerk").textContent="想在開放時收到我的信？留個 Email，我會親自寫信給你。"; }
   if(G.mailed) $("lkPerk").textContent+=" 開放時我會寫信給你 📬";
-  if(SUBSTACK_URL){ sub.href=SUBSTACK_URL; sub.hidden=false; } }
+}
 const fbSummary=()=>{ try{ return decodeURIComponent((fbLink().split("entry.610336213=")[1]||"")); }catch(_){ return ""; } };
 $("wantAi").addEventListener("click",e=>{ if(!G||G.early) return;
   if(window.WL_SEND){ $("lkMail").hidden=false; $("lkPerk").textContent="留個 Email 就完成預約：AI 量身卡開放時，我會親自寫信給你，不會拿去做別的事。"; $("lkEmail").focus(); return; }
